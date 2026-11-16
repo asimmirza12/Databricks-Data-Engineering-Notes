@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Ingestion Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single study column with a sticky section rail; each section = idea, live animation, then the "what if" table. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#16202A; --muted:#566370; --line:#D3DAE1;
+  --accent:#1F5FBF; --accent-soft:#E3ECFA;
+  --bronze:#A8622B; --silver:#73838F; --gold:#B38A12;
+  --ok:#23845A; --warn:#B8382B; --code-bg:#EAEEF2;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:700;margin-top:6px}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+:not(pre)>code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0;font-size:.85rem;line-height:1.55}
+pre code{font-size:inherit}
+.c-k{color:var(--accent)} .c-s{color:var(--ok)} .c-c{color:var(--muted)}
+a{color:var(--accent)}
+
+/* nav */
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:4px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+nav.rail a{flex:none;text-decoration:none;color:var(--muted);font-size:.82rem;font-weight:500;padding:5px 10px;border-radius:999px;white-space:nowrap}
+nav.rail a:hover,nav.rail a:focus-visible{color:var(--ink);background:var(--accent-soft);outline:none}
+nav.rail a.on{color:var(--accent);background:var(--accent-soft)}
+
+/* hero */
+header.hero{padding-block:40px 24px;display:grid;gap:16px}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.1rem;color:var(--muted)}
+.medal{display:flex;flex-wrap:wrap;gap:8px}
+.medal span{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+
+section{padding-block:44px;border-top:1px solid var(--line);display:grid;gap:18px}
+section > *{min-width:0}
+.sec-num{font-family:var(--f-mono);font-size:.78rem;color:var(--accent);letter-spacing:.08em}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px}
+.stage svg{width:100%;height:auto;display:block}
+.cap{font-size:.86rem;color:var(--muted)}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 12px;color:var(--ink);font-size:.95rem}
+.trap{border-left-color:var(--warn)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px;align-content:start}
+.card h3{margin:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--code-bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.whatif th:first-child{width:42%}
+
+/* controls */
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font-family:var(--f-body);font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.tog{display:inline-flex;gap:6px;align-items:center;font-size:.86rem;cursor:pointer}
+.log{font-family:var(--f-mono);font-size:.78rem;background:var(--code-bg);border-radius:8px;padding:10px 12px;min-height:84px;max-height:170px;overflow:auto;display:grid;gap:2px;align-content:start}
+.log .ok{color:var(--ok)} .log .skip{color:var(--muted)} .log .bad{color:var(--warn)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--ok);border-color:var(--ok)} .chip.bad{color:var(--warn);border-color:var(--warn)} .chip.acc{color:var(--accent);border-color:var(--accent)}
+
+/* auto loader sim */
+.al{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.al > div{min-width:0}
+.pane{border:1px dashed var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;align-content:start;min-height:150px}
+.pane h4{margin:0;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.file{font-family:var(--f-mono);font-size:.78rem;padding:5px 8px;border-radius:6px;background:var(--code-bg);display:flex;justify-content:space-between;gap:8px;animation:pop .35s ease-out}
+.file.done{opacity:.55}
+.file .v{color:var(--muted)}
+.arrow{display:grid;place-items:center;font-family:var(--f-mono);color:var(--accent);font-size:.75rem;text-align:center}
+.tblcount{font-family:var(--f-display);font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+@keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none}}
+.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+@media (max-width:620px){.al{grid-template-columns:1fr}.arrow{transform:rotate(90deg);min-height:30px}}
+
+/* pattern lanes */
+.lanes{display:grid;gap:12px}
+.lane{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center}
+.lane b{font-size:.85rem}
+.track{position:relative;height:28px;background:var(--code-bg);border-radius:6px;overflow:hidden}
+.blk{position:absolute;top:5px;height:18px;border-radius:4px;background:var(--accent)}
+.full .blk{width:30%;animation:fullrun 6s linear infinite;background:var(--bronze)}
+.full .blk:nth-child(2){animation-delay:-3s}
+@keyframes fullrun{0%{left:-30%}100%{left:100%}}
+.inc .blk{width:7%;animation:fullrun 6s linear infinite}
+.inc .blk:nth-child(2){animation-delay:-2s}.inc .blk:nth-child(3){animation-delay:-4s}
+.str .blk{width:3%;animation:fullrun 3s linear infinite;background:var(--ok)}
+.str .blk:nth-child(2){animation-delay:-.5s}.str .blk:nth-child(3){animation-delay:-1s}.str .blk:nth-child(4){animation-delay:-1.5s}.str .blk:nth-child(5){animation-delay:-2s}.str .blk:nth-child(6){animation-delay:-2.5s}
+@media (max-width:520px){.lane{grid-template-columns:1fr}}
+
+/* tree */
+.tree{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tree ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* jobs dag */
+.dag{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.task{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;background:var(--surface);animation:lit 8s infinite}
+.task:nth-of-type(2){animation-delay:2s}.task:nth-of-type(3){animation-delay:4s}.task:nth-of-type(4){animation-delay:6s}
+@keyframes lit{0%,20%{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}25%,100%{border-color:var(--line);box-shadow:none}}
+.dag .to{color:var(--muted);font-family:var(--f-mono)}
+
+/* slider */
+.bars{display:grid;gap:3px}
+.bar{height:8px;border-radius:3px;background:var(--accent);transform-origin:left;animation:grow 1.2s ease-out}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+input[type=range]{width:min(320px,100%)}
+.meter{height:10px;border-radius:5px;background:var(--code-bg);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--warn);transition:width .4s}
+
+/* decision */
+.dec{display:grid;gap:12px}
+.answer{border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:14px;display:grid;gap:4px}
+.answer strong{font-family:var(--f-display);font-size:1.25rem}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+footer{padding-block:30px 50px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .full .blk:nth-child(1){left:10%}.full .blk:nth-child(2){left:55%}
+  .inc .blk:nth-child(1){left:15%}.inc .blk:nth-child(2){left:45%}.inc .blk:nth-child(3){left:75%}
+  .str .blk:nth-child(n){left:calc(var(--i,0)*16%)}
+}
+</style>
+</head>
+<body>
+
+
+<nav class="rail" id="rail" aria-label="Sections">
+  <a href="../">← All notes</a>
+  <a href="#what">What is ingestion</a><a href="#patterns">Patterns</a><a href="#lakeflow">Lakeflow</a><a href="#uc">Unity Catalog</a>
+  <a href="#autoloader">Auto Loader</a><a href="#copyinto">COPY INTO</a><a href="#compare">Compare</a><a href="#managed">Managed connectors</a>
+  <a href="#jdbc">JDBC</a><a href="#rest">REST &amp; Jobs</a><a href="#semi">Semi-structured</a><a href="#partners">Partners</a><a href="#decide">Decide</a><a href="#terms">Don't confuse</a>
+</nav>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Databricks Data Engineer Professional · Section 2 · 21% of the exam</div>
+  <h1>Ingestion Field Guide</h1>
+  <p class="lede">Every way data gets into a Databricks lakehouse: Auto Loader, COPY INTO, Lakeflow Connect, JDBC and REST. Each section has a live demo you can poke, and a "what if I change this" table.</p>
+  <div class="medal"><span style="color:var(--bronze)">Bronze · raw</span><span style="color:var(--silver)">Silver · cleaned</span><span style="color:var(--gold)">Gold · business</span></div>
+</header>
+
+<!-- 0 -->
+<section id="what">
+  <div class="sec-num">00</div>
+  <h2>What is data ingestion?</h2>
+  <p>Ingestion is the pipe that moves data from where it is born into the place where you analyse it. In a bank, card swipes live in Oracle, a vendor drops a rewards CSV on S3, and service cases sit in Salesforce. Ingestion brings all of them into Delta tables governed by Unity Catalog, almost always landing in the <strong style="color:var(--bronze)">Bronze</strong> layer first.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 300" role="img" aria-label="Sources flow through ingestion tools into bronze, then silver, then gold">
+      <defs>
+        <path id="p1" d="M150 40 C 260 40, 270 150, 380 150"/>
+        <path id="p2" d="M150 100 C 260 100, 270 150, 380 150"/>
+        <path id="p3" d="M150 160 C 260 160, 270 150, 380 150"/>
+        <path id="p4" d="M150 220 C 260 220, 270 150, 380 150"/>
+        <path id="p5" d="M150 280 C 260 280, 270 150, 380 150"/>
+        <path id="pb" d="M460 150 L 530 150"/>
+        <path id="ps" d="M610 150 L 680 150"/>
+      </defs>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--ink)">
+        <g fill="var(--code-bg)" stroke="var(--line)">
+          <rect x="10" y="24" width="140" height="32" rx="6"/><rect x="10" y="84" width="140" height="32" rx="6"/>
+          <rect x="10" y="144" width="140" height="32" rx="6"/><rect x="10" y="204" width="140" height="32" rx="6"/>
+          <rect x="10" y="264" width="140" height="32" rx="6"/>
+        </g>
+        <text x="22" y="45">Files · S3 / ADLS</text><text x="22" y="105">Oracle / SQL Server</text>
+        <text x="22" y="165">Salesforce · SaaS</text><text x="22" y="225">Kafka stream</text><text x="22" y="285">REST API</text>
+        <g fill="none" stroke="var(--line)" stroke-width="2">
+          <use href="#p1"/><use href="#p2"/><use href="#p3"/><use href="#p4"/><use href="#p5"/><use href="#pb"/><use href="#ps"/>
+        </g>
+        <rect x="380" y="118" width="80" height="64" rx="8" fill="var(--surface)" stroke="var(--bronze)" stroke-width="2"/>
+        <text x="420" y="146" text-anchor="middle" font-weight="700" fill="var(--bronze)">BRONZE</text>
+        <text x="420" y="164" text-anchor="middle" font-size="11" fill="var(--muted)">raw</text>
+        <rect x="530" y="118" width="80" height="64" rx="8" fill="var(--surface)" stroke="var(--silver)" stroke-width="2"/>
+        <text x="570" y="146" text-anchor="middle" font-weight="700" fill="var(--silver)">SILVER</text>
+        <text x="570" y="164" text-anchor="middle" font-size="11" fill="var(--muted)">MERGE</text>
+        <rect x="680" y="118" width="74" height="64" rx="8" fill="var(--surface)" stroke="var(--gold)" stroke-width="2"/>
+        <text x="717" y="146" text-anchor="middle" font-weight="700" fill="var(--gold)">GOLD</text>
+        <text x="717" y="164" text-anchor="middle" font-size="11" fill="var(--muted)">KPIs</text>
+        <text x="265" y="20" text-anchor="middle" font-size="11" fill="var(--accent)" font-family="JetBrains Mono, monospace">INGESTION</text>
+        <text x="535" y="110" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">SQL / PySpark</text>
+      </g>
+      <g class="flow">
+        <circle r="5" fill="var(--accent)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+        <circle r="5" fill="var(--accent)"><animateMotion dur="3s" begin="0.6s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+        <circle r="5" fill="var(--accent)"><animateMotion dur="3s" begin="1.2s" repeatCount="indefinite"><mpath href="#p3"/></animateMotion></circle>
+        <circle r="5" fill="var(--ok)"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#p4"/></animateMotion></circle>
+        <circle r="5" fill="var(--accent)"><animateMotion dur="3s" begin="1.8s" repeatCount="indefinite"><mpath href="#p5"/></animateMotion></circle>
+        <circle r="4" fill="var(--bronze)"><animateMotion dur="1.5s" repeatCount="indefinite"><mpath href="#pb"/></animateMotion></circle>
+        <circle r="4" fill="var(--silver)"><animateMotion dur="1.5s" begin=".7s" repeatCount="indefinite"><mpath href="#ps"/></animateMotion></circle>
+      </g>
+    </svg>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Where is the data?</h3><p class="cap">Files, a database, a SaaS app, a stream or an API. This picks the tool.</p></div>
+    <div class="card"><h3>How often does it change?</h3><p class="cap">Once a day means batch. Every second means streaming.</p></div>
+    <div class="card"><h3>How do I avoid loading twice?</h3><p class="cap">Checkpoint, table metadata, high-water mark or CDC log.</p></div>
+  </div>
+</section>
+
+<!-- 1 -->
+<section id="patterns">
+  <div class="sec-num">01</div>
+  <h2>Ingestion patterns</h2>
+  <div class="stage lanes">
+    <div class="lane full"><b>Full batch</b><div class="track"><span class="blk"></span><span class="blk"></span></div></div>
+    <div class="lane inc"><b>Incremental</b><div class="track"><span class="blk"></span><span class="blk"></span><span class="blk"></span></div></div>
+    <div class="lane str"><b>Streaming</b><div class="track"><span class="blk" style="--i:0"></span><span class="blk" style="--i:1"></span><span class="blk" style="--i:2"></span><span class="blk" style="--i:3"></span><span class="blk" style="--i:4"></span><span class="blk" style="--i:5"></span></div></div>
+    <p class="cap">Full batch moves big blocks (everything) each run. Incremental moves only the new slice, then stops. Streaming moves small pieces all the time.</p>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Pattern</th><th>Meaning</th><th>Example</th><th>Tool</th></tr>
+    <tr><td>Full batch</td><td>Reload everything each run</td><td>Small reference table, nightly</td><td>spark.read, CTAS, JDBC</td></tr>
+    <tr><td>Incremental batch</td><td>Load only new data, then stop</td><td>Daily vendor file</td><td>COPY INTO, Auto Loader + availableNow</td></tr>
+    <tr><td>Streaming</td><td>Always on, seconds to minutes</td><td>Card transaction feed</td><td>Auto Loader continuous, Kafka</td></tr>
+    <tr><td>CDC</td><td>Capture inserts, updates, deletes</td><td>Oracle customer table</td><td>Managed connector, AUTO CDC, MERGE</td></tr>
+  </table></div>
+  <p class="note">In Databricks, "streaming" really means incremental processing. It does not have to run all day.</p>
+</section>
+
+<!-- 2 -->
+<section id="lakeflow">
+  <div class="sec-num">02</div>
+  <h2>Lakeflow and Lakeflow Connect</h2>
+  <p>Lakeflow has three parts: <strong>Connect</strong> to ingest, <strong>Declarative Pipelines</strong> (formerly DLT) to transform, and <strong>Jobs</strong> to orchestrate. Lakeflow Connect is the umbrella over every ingestion method.</p>
+  <div class="tree">
+    <div class="card"><span class="tag" style="color:var(--accent)">Managed connectors · no code</span><h3>Databricks runs it</h3>
+      <ul><li><b>Database CDC:</b> SQL Server, Oracle, MySQL, PostgreSQL</li><li><b>Query-based:</b> Teradata and others, using a cursor column</li><li><b>SaaS:</b> Salesforce, Workday, ServiceNow, Google Analytics, Dynamics 365, NetSuite</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">Standard connectors · your code</span><h3>You configure it</h3>
+      <ul><li><b>Files:</b> Auto Loader, COPY INTO, read_files, upload UI</li><li><b>Streams:</b> Kafka, Kinesis, Event Hubs, Pub/Sub</li></ul></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Everything else</span><h3>Fill the gaps</h3>
+      <ul><li>Community and custom connectors</li><li>Partner tools via Partner Connect (Fivetran, Qlik, Informatica)</li></ul></div>
+  </div>
+  <p class="note trap">Auto Loader is a <b>standard</b> connector, not a managed one, even though a Lakeflow pipeline manages its checkpoint for you.</p>
+</section>
+
+<!-- 3 -->
+<section id="uc">
+  <div class="sec-num">03</div>
+  <h2>Unity Catalog building blocks</h2>
+  <p>Before any tool reads a bucket, Unity Catalog has to know who may read it. Three objects form a chain, and tables sit beside volumes in the same schema.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 170" role="img" aria-label="Storage credential wraps cloud access, external location narrows it to a path, volume gives a schema-level folder">
+      <g font-family="IBM Plex Sans, sans-serif" font-size="13">
+        <rect x="10" y="50" width="150" height="70" rx="8" fill="var(--code-bg)" stroke="var(--line)"/>
+        <text x="85" y="80" text-anchor="middle" fill="var(--ink)" font-weight="600">S3 bucket</text>
+        <text x="85" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">s3://bank-landing/</text>
+        <rect x="205" y="50" width="160" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="285" y="80" text-anchor="middle" fill="var(--ink)" font-weight="600">Storage credential</text>
+        <text x="285" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">IAM role · admin only</text>
+        <rect x="410" y="50" width="160" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="490" y="80" text-anchor="middle" fill="var(--ink)" font-weight="600">External location</text>
+        <text x="490" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">GRANT READ FILES</text>
+        <rect x="615" y="50" width="135" height="70" rx="8" fill="var(--surface)" stroke="var(--bronze)" stroke-width="2"/>
+        <text x="682" y="80" text-anchor="middle" fill="var(--ink)" font-weight="600">Volume</text>
+        <text x="682" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">/Volumes/rewards/…</text>
+        <g stroke="var(--muted)" stroke-width="2" fill="none"><path d="M160 85 H200"/><path d="M365 85 H405"/><path d="M570 85 H610"/></g>
+        <text x="380" y="20" text-anchor="middle" fill="var(--muted)" font-size="11" font-family="JetBrains Mono, monospace">reaches cloud → narrows to a path → friendly governed folder</text>
+        <circle r="6" fill="var(--accent)" class="flow"><animateMotion dur="3.5s" repeatCount="indefinite" path="M85 140 H682"/></circle>
+        <text x="85" y="160" fill="var(--muted)" font-size="11">no keys in your code: UC checks grants, then uses the credential</text>
+      </g>
+    </svg>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Object</th><th>What it is</th><th>Drop it and…</th><th>Key grant</th></tr>
+    <tr><td>Storage credential</td><td>Cloud identity Databricks assumes</td><td>Locations stop working</td><td>CREATE EXTERNAL LOCATION</td></tr>
+    <tr><td>External location</td><td>Path + credential</td><td>Files stay</td><td>READ FILES / WRITE FILES</td></tr>
+    <tr><td>Managed volume</td><td>Folder in Databricks-managed storage</td><td>Files are deleted</td><td>READ / WRITE VOLUME</td></tr>
+    <tr><td>External volume</td><td>Folder on an external location</td><td>Files stay</td><td>READ / WRITE VOLUME</td></tr>
+    <tr><td>Managed table (recommended)</td><td>Delta table, UC picks location</td><td>Data is deleted</td><td>SELECT / MODIFY</td></tr>
+    <tr><td>External table</td><td>Delta table at your LOCATION</td><td>Files stay</td><td>SELECT / MODIFY</td></tr>
+  </table></div>
+  <p class="note">A Delta table is Parquet files plus a <code>_delta_log/</code> folder, registered as <code>catalog.schema.table</code>.</p>
+</section>
+
+<!-- 4 -->
+<section id="autoloader">
+  <div class="sec-num">04</div>
+  <h2>Auto Loader</h2>
+  <p>Auto Loader loads each new file from cloud storage exactly once, using a checkpoint to remember what is done. Files only, never tables. Try it: drop files, run the stream, then replace a file with the same name.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="alNew">New file arrives</button>
+      <button id="alReplace">Source replaces file_002</button>
+      <button id="alRun" class="primary">Run stream (availableNow)</button>
+      <label class="tog"><input type="checkbox" id="alOver"> allowOverwrites</label>
+      <button id="alReset">Delete checkpoint</button>
+    </div>
+    <div class="al">
+      <div class="pane"><h4>Landing · s3://landing/fico/</h4><div id="alFiles"></div></div>
+      <div class="arrow">cloudFiles<br>→</div>
+      <div class="pane"><h4>Checkpoint (RocksDB)</h4><div id="alChk"></div>
+        <h4 style="margin-top:8px">rewards.bronze.fico rows</h4><div class="tblcount" id="alRows">0</div></div>
+    </div>
+    <div class="log" id="alLog" aria-live="polite"><span class="skip">Click "Run stream" to load the two files waiting in landing.</span></div>
+  </div>
+
+  <h3>The code</h3>
+<pre><code>(spark.<span class="c-k">readStream</span>
+   .format(<span class="c-s">"cloudFiles"</span>)                         <span class="c-c"># = use Auto Loader</span>
+   .option(<span class="c-s">"cloudFiles.format"</span>, <span class="c-s">"json"</span>)
+   .option(<span class="c-s">"cloudFiles.schemaLocation"</span>, <span class="c-s">"/Volumes/rewards/bronze/_schemas/fico"</span>)
+   .option(<span class="c-s">"cloudFiles.inferColumnTypes"</span>, <span class="c-s">"true"</span>)
+   .load(<span class="c-s">"s3://landing/fico/"</span>)
+ .<span class="c-k">writeStream</span>
+   .option(<span class="c-s">"checkpointLocation"</span>, <span class="c-s">"/Volumes/rewards/bronze/_chk/fico"</span>)
+   .trigger(availableNow=<span class="c-k">True</span>)
+   .toTable(<span class="c-s">"rewards.bronze.fico"</span>))</code></pre>
+<pre><code><span class="c-c">-- SQL: a streaming table uses Auto Loader underneath, checkpoint managed for you</span>
+<span class="c-k">CREATE OR REFRESH STREAMING TABLE</span> rewards.bronze.fico
+<span class="c-k">AS SELECT</span> * <span class="c-k">FROM STREAM</span> read_files(<span class="c-s">'s3://landing/fico/'</span>, format => <span class="c-s">'json'</span>);</code></pre>
+
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td><code>format("json")</code> instead of <code>cloudFiles</code></td><td>Plain Spark reader, no file tracking</td></tr>
+    <tr><td><code>spark.read</code> instead of <code>readStream</code></td><td>Fails: Auto Loader is a streaming source only</td></tr>
+    <tr><td>Remove <code>inferColumnTypes</code></td><td>JSON and CSV columns all become STRING</td></tr>
+    <tr><td>Remove <code>schemaLocation</code>, no schema given</td><td>Fails: the inferred schema has nowhere to live</td></tr>
+    <tr><td>New or deleted checkpoint path</td><td>Every file is reloaded from scratch</td></tr>
+    <tr><td><code>trigger(availableNow=True)</code></td><td>Load all new files, then stop. Schedule with Jobs</td></tr>
+    <tr><td><code>trigger(processingTime="5 minutes")</code></td><td>Stays running, checks every 5 minutes</td></tr>
+    <tr><td><code>trigger(once=True)</code></td><td>Deprecated. Use availableNow</td></tr>
+  </table></div>
+
+  <h3>Schema inference</h3>
+  <p>The first run samples up to <b>1,000 files or 50 GB</b>, whichever comes first, and saves the schema in <code>schemaLocation</code>. Later runs reuse it. Use <code>cloudFiles.schemaHints</code> to pin a type, for example <code>"amount DECIMAL(10,2), customer.age INT"</code>.</p>
+
+  <h3>Schema evolution: what happens when a new column arrives?</h3>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="seMode" class="cap">cloudFiles.schemaEvolutionMode</label>
+      <select id="seMode">
+        <option value="addNewColumns">addNewColumns (default, no schema given)</option>
+        <option value="rescue">rescue</option>
+        <option value="failOnNewColumns">failOnNewColumns</option>
+        <option value="none">none (default with your own schema)</option>
+      </select>
+      <button id="seGo" class="primary">FICO file arrives with bnpl_score</button>
+    </div>
+    <div class="tbl"><table id="seTable" style="min-width:420px"></table></div>
+    <div id="seMsg" class="note">Pick a mode and send the file.</div>
+  </div>
+
+  <h3>Rescued data column</h3>
+  <p><code>_rescued_data</code> catches type mismatches ("abc" in an INT), extra columns and case mismatches ("Amount" vs "amount"), stored as JSON with the source file path. Alert on <code>WHERE _rescued_data IS NOT NULL</code>.</p>
+
+  <h3>File detection modes</h3>
+  <div class="grid3">
+    <div class="card">
+      <span class="tag">Directory listing · default</span>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><g fill="var(--code-bg)" stroke="var(--line)">
+        <rect x="10" y="10" width="40" height="20" rx="3"/><rect x="60" y="10" width="40" height="20" rx="3"/><rect x="110" y="10" width="40" height="20" rx="3"/><rect x="160" y="10" width="30" height="20" rx="3"/>
+        <rect x="10" y="40" width="40" height="20" rx="3"/><rect x="60" y="40" width="40" height="20" rx="3"/><rect x="110" y="40" width="40" height="20" rx="3"/><rect x="160" y="40" width="30" height="20" rx="3"/></g>
+        <rect y="5" width="4" height="60" fill="var(--accent)"><animate attributeName="x" values="5;195;5" dur="3s" repeatCount="indefinite"/></rect>
+        <text x="100" y="82" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">scans the whole folder every run</text></svg>
+      <p class="cap">No setup. Best for small or medium folders, like a daily vendor file.</p>
+    </div>
+    <div class="card">
+      <span class="tag">File notification · legacy</span>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><g font-family="IBM Plex Sans, sans-serif" font-size="10">
+        <rect x="10" y="20" width="50" height="30" rx="4" fill="var(--code-bg)" stroke="var(--line)"/><text x="35" y="39" text-anchor="middle" fill="var(--ink)">S3</text>
+        <rect x="80" y="20" width="50" height="30" rx="4" fill="var(--code-bg)" stroke="var(--line)"/><text x="105" y="39" text-anchor="middle" fill="var(--ink)">SQS</text>
+        <rect x="150" y="20" width="44" height="30" rx="4" fill="var(--surface)" stroke="var(--accent)"/><text x="172" y="39" text-anchor="middle" fill="var(--ink)">stream</text>
+        <circle r="4" fill="var(--accent)"><animateMotion dur="2s" repeatCount="indefinite" path="M60 35 H150"/></circle>
+        <text x="100" y="82" text-anchor="middle" fill="var(--muted)">cloud events per stream</text></g></svg>
+      <p class="cap">Needs cloud permissions per stream. <code>useNotifications = true</code>.</p>
+    </div>
+    <div class="card">
+      <span class="tag" style="color:var(--ok)">Managed file events · recommended</span>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><g font-family="IBM Plex Sans, sans-serif" font-size="10">
+        <rect x="10" y="25" width="70" height="30" rx="4" fill="var(--surface)" stroke="var(--ok)"/><text x="45" y="44" text-anchor="middle" fill="var(--ink)">UC location</text>
+        <rect x="140" y="5" width="54" height="20" rx="4" fill="var(--code-bg)" stroke="var(--line)"/><rect x="140" y="30" width="54" height="20" rx="4" fill="var(--code-bg)" stroke="var(--line)"/><rect x="140" y="55" width="54" height="20" rx="4" fill="var(--code-bg)" stroke="var(--line)"/>
+        <circle r="4" fill="var(--ok)"><animateMotion dur="2s" repeatCount="indefinite" path="M80 40 L140 15"/></circle>
+        <circle r="4" fill="var(--ok)"><animateMotion dur="2s" begin=".5s" repeatCount="indefinite" path="M80 40 L140 40"/></circle>
+        <circle r="4" fill="var(--ok)"><animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M80 40 L140 65"/></circle>
+        <text x="100" y="88" text-anchor="middle" fill="var(--muted)">one watcher, many streams</text></g></svg>
+      <p class="cap">Admin enables once per external location. <code>useManagedFileEvents = true</code>.</p>
+    </div>
+  </div>
+
+  <h3>Real-life scenarios</h3>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What happens</th><th>Fix</th></tr>
+    <tr><td>Source replaces a file with the same name</td><td>Ignored, path already done</td><td><code>allowOverwrites = true</code> or a one-off COPY INTO, then delete old rows or MERGE</td></tr>
+    <tr><td>Move old files out of landing</td><td>No impact once processed</td><td>Never move into the watched folder. Or use <code>cleanSource</code></td></tr>
+    <tr><td>Skip old files on first run</td><td>-</td><td><code>includeExistingFiles = false</code> or <code>modifiedAfter</code></td></tr>
+    <tr><td>Two files arrive together</td><td>Same micro-batch, processed in parallel</td><td>No order guarantee. MERGE on a sequence column</td></tr>
+    <tr><td>Huge backlog</td><td>Could overload the cluster</td><td><code>maxFilesPerTrigger</code> (default 1,000), <code>maxBytesPerTrigger</code></td></tr>
+    <tr><td>Bank account number must be hidden</td><td>Clear value would land in Bronze</td><td><code>sha2</code> or <code>mask()</code> in the stream before the write</td></tr>
+    <tr><td>Source sends delete flags</td><td>Auto Loader only appends</td><td><code>foreachBatch</code> + MERGE, or AUTO CDC</td></tr>
+  </table></div>
+  <p class="note">Check what's loaded: <code>SELECT * FROM cloud_files_state('/Volumes/.../_chk/fico')</code>. Never edit the checkpoint by hand.</p>
+</section>
+
+<!-- 5 -->
+<section id="copyinto">
+  <div class="sec-num">05</div>
+  <h2>COPY INTO</h2>
+  <p>A SQL batch command that loads files into a Delta table and skips files it has already loaded, tracked in the table's own metadata. Run it twice and watch the second run load nothing.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="ciRun" class="primary">Run COPY INTO</button>
+      <button id="ciNew">Vendor drops a new file</button>
+      <label class="tog"><input type="checkbox" id="ciForce"> 'force' = 'true'</label>
+    </div>
+    <div class="al">
+      <div class="pane"><h4>/Volumes/rewards/bronze/landing/</h4><div id="ciFiles"></div></div>
+      <div class="arrow">COPY<br>INTO →</div>
+      <div class="pane"><h4>rewards.bronze.rewards_file rows</h4><div class="tblcount" id="ciRows">0</div><div class="cap">loaded files remembered in table metadata</div></div>
+    </div>
+    <div class="log" id="ciLog" aria-live="polite"><span class="skip">Three daily files are waiting.</span></div>
+  </div>
+<pre><code><span class="c-k">CREATE TABLE IF NOT EXISTS</span> rewards.bronze.rewards_file;   <span class="c-c">-- empty, no columns</span>
+
+<span class="c-k">COPY INTO</span> rewards.bronze.rewards_file
+<span class="c-k">FROM</span> (<span class="c-k">SELECT</span> customer_id, <span class="c-k">CAST</span>(points <span class="c-k">AS INT</span>) <span class="c-k">AS</span> points,
+             sha2(account_no, 256) <span class="c-k">AS</span> account_no,
+             _metadata.file_path <span class="c-k">AS</span> source_file
+      <span class="c-k">FROM</span> <span class="c-s">'/Volumes/rewards/bronze/landing/'</span>)
+<span class="c-k">FILEFORMAT</span> = CSV
+<span class="c-k">PATTERN</span> = <span class="c-s">'rewards_2026*.csv'</span>
+<span class="c-k">FORMAT_OPTIONS</span> (<span class="c-s">'header'</span> = <span class="c-s">'true'</span>, <span class="c-s">'inferSchema'</span> = <span class="c-s">'true'</span>)
+<span class="c-k">COPY_OPTIONS</span>  (<span class="c-s">'mergeSchema'</span> = <span class="c-s">'true'</span>);</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Run the same command twice</td><td>Second run loads nothing: idempotent</td></tr>
+    <tr><td><code>'force' = 'true'</code></td><td>Reloads seen files, so duplicates unless you clean first</td></tr>
+    <tr><td>Remove <code>mergeSchema</code></td><td>New columns in files are silently ignored</td></tr>
+    <tr><td>Add <code>mergeSchema</code></td><td>New columns added; old rows get NULL</td></tr>
+    <tr><td><code>FILES = ('a.csv','b.csv')</code></td><td>Exactly these files, up to 1,000. Good for a targeted reload</td></tr>
+    <tr><td><code>VALIDATE 15 ROWS</code></td><td>Dry run: checks the schema, writes nothing</td></tr>
+    <tr><td>Remove <code>inferSchema</code> (CSV)</td><td>All columns STRING</td></tr>
+  </table></div>
+  <h3>CDC with COPY INTO</h3>
+  <div class="grid3">
+    <div class="card"><span class="chip ok">Insert</span><p class="cap">New row lands. Fine.</p></div>
+    <div class="card"><span class="chip bad">Update</span><p class="cap">A second row next to the old one.</p></div>
+    <div class="card"><span class="chip bad">Delete flag</span><p class="cap">Just another row.</p></div>
+  </div>
+  <p class="note">COPY INTO only appends. Land raw history in Bronze, then MERGE into Silver on the key with the op flag and a timestamp, or use AUTO CDC.</p>
+</section>
+
+<!-- 6 -->
+<section id="compare">
+  <div class="sec-num">06</div>
+  <h2>Auto Loader vs COPY INTO</h2>
+  <div class="tbl"><table>
+    <tr><th></th><th>COPY INTO</th><th>Auto Loader</th></tr>
+    <tr><td>Language</td><td>SQL command</td><td>Python readStream or SQL streaming table</td></tr>
+    <tr><td>Runs as</td><td>Batch only</td><td>Batch (availableNow) or continuous</td></tr>
+    <tr><td>Scale</td><td>Thousands of files</td><td>Millions of files</td></tr>
+    <tr><td>Tracks files in</td><td>Target table metadata</td><td>Checkpoint (RocksDB)</td></tr>
+    <tr><td>Finds new files</td><td>Lists the source each run</td><td>Listing, notification or managed file events</td></tr>
+    <tr><td>Schema changes</td><td>mergeSchema only</td><td>Four evolution modes + rescued data</td></tr>
+    <tr><td>Reload one file</td><td><code>FILES</code> + <code>force</code></td><td>allowOverwrites or a new checkpoint</td></tr>
+    <tr><td>Recommended for new pipelines</td><td>Simple or one-off loads</td><td>Yes</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="card"><h3>Use COPY INTO</h3><p class="cap">Daily vendor rewards file, a few hundred rows, a SQL-only team, a one-off backfill.</p></div>
+    <div class="card"><h3>Use Auto Loader</h3><p class="cap">Card transactions at thousands of files an hour, FICO attributes that keep changing, near real-time.</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="managed">
+  <div class="sec-num">07</div>
+  <h2>Managed database connectors</h2>
+  <p>You choose the source, tables and target. Databricks takes the first snapshot, then keeps applying inserts, updates and deletes from the change log.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 200" role="img" aria-label="Oracle change log flows through the ingestion gateway into a staging volume, then the ingestion pipeline writes streaming tables">
+      <defs><path id="mc" d="M120 90 H680"/></defs>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="12">
+        <path d="M120 90 H680" stroke="var(--line)" stroke-width="2" fill="none"/>
+        <rect x="10" y="55" width="110" height="70" rx="8" fill="var(--code-bg)" stroke="var(--line)"/>
+        <text x="65" y="85" text-anchor="middle" fill="var(--ink)" font-weight="600">Oracle</text>
+        <text x="65" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">LogMiner</text>
+        <rect x="170" y="55" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="235" y="85" text-anchor="middle" fill="var(--ink)" font-weight="600">Ingestion gateway</text>
+        <text x="235" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">classic · always on</text>
+        <rect x="345" y="65" width="90" height="50" rx="8" fill="var(--code-bg)" stroke="var(--line)"/>
+        <text x="390" y="94" text-anchor="middle" fill="var(--ink)">staging vol</text>
+        <rect x="480" y="55" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="545" y="85" text-anchor="middle" fill="var(--ink)" font-weight="600">Ingestion pipeline</text>
+        <text x="545" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">serverless · scheduled</text>
+        <rect x="655" y="55" width="100" height="70" rx="8" fill="var(--surface)" stroke="var(--bronze)" stroke-width="2"/>
+        <text x="705" y="85" text-anchor="middle" fill="var(--bronze)" font-weight="700">Bronze</text>
+        <text x="705" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">SCD 1 or 2</text>
+        <rect x="10" y="155" width="745" height="34" rx="6" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+        <text x="382" y="177" text-anchor="middle" fill="var(--muted)">UC connection: host, port, secret credentials · GRANT USE CONNECTION</text>
+        <g font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">
+          <g><rect x="-14" y="-9" width="28" height="18" rx="4" fill="var(--ok)"/><text y="4" text-anchor="middle" fill="var(--surface)">I</text>
+            <animateMotion dur="4s" repeatCount="indefinite"><mpath href="#mc"/></animateMotion></g>
+          <g><rect x="-14" y="-9" width="28" height="18" rx="4" fill="var(--accent)"/><text y="4" text-anchor="middle" fill="var(--surface)">U</text>
+            <animateMotion dur="4s" begin="1.33s" repeatCount="indefinite"><mpath href="#mc"/></animateMotion></g>
+          <g><rect x="-14" y="-9" width="28" height="18" rx="4" fill="var(--warn)"/><text y="4" text-anchor="middle" fill="var(--surface)">D</text>
+            <animateMotion dur="4s" begin="2.66s" repeatCount="indefinite"><mpath href="#mc"/></animateMotion></g>
+        </g>
+      </g>
+    </svg>
+    <p class="cap">Inserts, updates and deletes travel together. SaaS connectors skip the gateway: connection (often OAuth), then the ingestion pipeline.</p>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Source</th><th>Prerequisite</th></tr>
+    <tr><td>SQL Server</td><td>CDC or change tracking enabled</td></tr>
+    <tr><td>Oracle</td><td>LogMiner with supplemental logging</td></tr>
+    <tr><td>MySQL</td><td>Binary log</td></tr>
+    <tr><td>PostgreSQL</td><td>Logical replication</td></tr>
+    <tr><td>Teradata (query-based)</td><td>A reliable cursor column, like last_updated. Misses hard deletes</td></tr>
+  </table></div>
+  <p class="note trap">If the gateway stops longer than the database keeps its log, the connector needs a full re-snapshot.</p>
+</section>
+
+<!-- 8 -->
+<section id="jdbc">
+  <div class="sec-num">08</div>
+  <h2>Databases the hands-on way: JDBC</h2>
+  <div class="tbl"><table>
+    <tr><th>Method</th><th>How</th><th>CDC?</th><th>Best for</th></tr>
+    <tr><td>Managed connector</td><td>Gateway + pipeline</td><td>Log-based</td><td>Oracle or SQL Server ongoing sync</td></tr>
+    <tr><td>Query-based connector</td><td>Cursor column</td><td>Inserts and updates</td><td>Databases without CDC</td></tr>
+    <tr><td>Lakehouse Federation</td><td>Foreign catalog, then CTAS or MERGE</td><td>Manual</td><td>Exploration, small tables</td></tr>
+    <tr><td>Spark JDBC</td><td><code>spark.read.format("jdbc")</code></td><td>Your own high-water mark</td><td>Full custom control</td></tr>
+    <tr><td>External CDC tool</td><td>GoldenGate or Qlik → S3 → Auto Loader</td><td>Via the tool</td><td>Existing bank CDC setup</td></tr>
+  </table></div>
+<pre><code>df = (spark.read.format(<span class="c-s">"jdbc"</span>)
+      .option(<span class="c-s">"url"</span>, <span class="c-s">"jdbc:oracle:thin:@//db-host:1521/REWARDS"</span>)
+      .option(<span class="c-s">"dbtable"</span>, <span class="c-s">"rewards_txn"</span>)
+      .option(<span class="c-s">"user"</span>, <span class="c-s">"etl_user"</span>)
+      .option(<span class="c-s">"password"</span>, dbutils.secrets.get(<span class="c-s">"rewards-scope"</span>, <span class="c-s">"oracle-pwd"</span>))
+      .option(<span class="c-s">"partitionColumn"</span>, <span class="c-s">"txn_id"</span>).option(<span class="c-s">"lowerBound"</span>, 1)
+      .option(<span class="c-s">"upperBound"</span>, 50000000).option(<span class="c-s">"numPartitions"</span>, <span id="npCode">8</span>)
+      .option(<span class="c-s">"fetchsize"</span>, 10000)
+      .load())</code></pre>
+  <div class="stage">
+    <div class="ctrls"><label for="np" class="cap">numPartitions: <b id="npVal">8</b></label><input type="range" id="np" min="1" max="16" value="8"></div>
+    <div class="bars" id="npBars"></div>
+    <div class="cap" id="npTxt"></div>
+    <div><div class="cap">Load on the source database</div><div class="meter"><i id="npMeter"></i></div></div>
+  </div>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>No partition options</td><td>One connection, one task. Slow on big tables</td></tr>
+    <tr><td>Wrong lower/upper bounds</td><td>Still reads every row, but partitions are uneven</td></tr>
+    <tr><td>Small <code>fetchsize</code></td><td>Many round trips, slow</td></tr>
+    <tr><td><code>mode("overwrite")</code></td><td>Full reload every run</td></tr>
+    <tr><td>No <code>last_updated</code> filter</td><td>Whole table every run. Store your own high-water mark</td></tr>
+  </table></div>
+  <p class="note">ODBC mostly runs the other way: Power BI or Excel connecting into Databricks.</p>
+</section>
+
+<!-- 9 -->
+<section id="rest">
+  <div class="sec-num">09</div>
+  <h2>REST APIs and Lakeflow Jobs</h2>
+<pre><code><span class="c-k">import</span> requests, json
+token = dbutils.secrets.get(<span class="c-s">"rewards-scope"</span>, <span class="c-s">"api-token"</span>)
+page, rows = 1, []
+<span class="c-k">while True</span>:
+    r = requests.get(<span class="c-s">"https://api.vendor.com/offers"</span>, params={<span class="c-s">"page"</span>: page},
+                     headers={<span class="c-s">"Authorization"</span>: <span class="c-s">f"Bearer {token}"</span>}, timeout=30)
+    r.raise_for_status()
+    items = r.json()[<span class="c-s">"items"</span>]
+    <span class="c-k">if not</span> items: <span class="c-k">break</span>
+    rows += items; page += 1
+<span class="c-c"># preferred: land raw JSON in a volume, Auto Loader picks it up</span>
+dbutils.fs.put(<span class="c-s">"/Volumes/rewards/bronze/landing/offers/offers.json"</span>, json.dumps(rows), <span class="c-k">True</span>)</code></pre>
+  <p class="cap">Without the paging loop you get only page one. Without <code>raise_for_status</code>, error pages load as data.</p>
+  <div class="stage">
+    <div class="dag">
+      <div class="task">API notebook</div><span class="to">→</span>
+      <div class="task">Auto Loader · Bronze</div><span class="to">→</span>
+      <div class="task">MERGE · Silver</div><span class="to">→</span>
+      <div class="task">Gold view</div>
+    </div>
+    <p class="cap">A Lakeflow Job runs each task in order. Triggers: a schedule, a file arriving, or continuous. Each task gets retries and alerts.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="semi">
+  <div class="sec-num">10</div>
+  <h2>Semi-structured and unstructured data</h2>
+  <div class="tbl"><table>
+    <tr><th>Approach</th><th>How to load</th><th>How to query</th><th>Trade-off</th></tr>
+    <tr><td>STRUCT columns</td><td>Auto Loader infers, or <code>from_json</code></td><td><code>customer.address.city</code>, <code>explode(items)</code></td><td>Typed and fast; changes need evolution</td></tr>
+    <tr><td>JSON string</td><td>Keep raw text</td><td><code>raw:customer.city::string</code></td><td>Flexible, slow</td></tr>
+    <tr><td>VARIANT (recommended)</td><td><code>parse_json</code> or <code>singleVariantColumn</code></td><td><code>v:customer.age::int</code></td><td>Flexible and fast; great for changing FICO attributes</td></tr>
+    <tr><td>binaryFile</td><td><code>cloudFiles.format = "binaryFile"</code></td><td>path, size, modificationTime, content</td><td>PDFs and images</td></tr>
+  </table></div>
+<pre><code><span class="c-k">SELECT</span> v:customer.id::string  <span class="c-k">AS</span> customer_id,
+       item.value:sku::string  <span class="c-k">AS</span> sku
+<span class="c-k">FROM</span> rewards.bronze.offers_raw,
+     <span class="c-k">LATERAL</span> variant_explode(v:items) <span class="c-k">AS</span> item;</code></pre>
+</section>
+
+<!-- 11 -->
+<section id="partners">
+  <div class="sec-num">11</div>
+  <h2>Partner connectors</h2>
+  <p>Fivetran, Qlik Replicate, Informatica, Matillion and others connect through Partner Connect, which sets up a trial, a service principal, a SQL warehouse and a token. They write into Unity Catalog tables using Databricks permissions.</p>
+  <div class="grid2">
+    <div class="card"><h3>Pick a partner when</h3><p class="cap">There's no native connector, you already license one (GoldenGate or Qlik), or the setup is unusual on-premises.</p></div>
+    <div class="card"><h3>Trade-offs</h3><p class="cap">An extra licence, data passing through another vendor, and monitoring outside Databricks.</p></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="decide">
+  <div class="sec-num">12</div>
+  <h2>Which method? Decide in two clicks</h2>
+  <div class="stage dec">
+    <div class="ctrls" id="dq1">
+      <span class="cap">Where is the data?</span>
+      <button data-s="files">Files</button><button data-s="db">Database</button><button data-s="saas">SaaS app</button><button data-s="stream">Stream</button><button data-s="api">REST API</button>
+    </div>
+    <div class="ctrls" id="dq2"></div>
+    <div class="answer" id="dAns" hidden><span class="cap">Use</span><strong id="dPick"></strong><span id="dWhy" class="cap"></span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Requirement</th><th>Pick</th></tr>
+    <tr><td>Millions of files, continuous</td><td>Auto Loader + managed file events</td></tr>
+    <tr><td>Daily small file, SQL team</td><td>COPY INTO</td></tr>
+    <tr><td>Oracle with updates and deletes</td><td>Managed connector (CDC)</td></tr>
+    <tr><td>Database without CDC</td><td>Query-based connector</td></tr>
+    <tr><td>Niche SaaS with no native connector</td><td>Partner tool</td></tr>
+    <tr><td>Fast-changing JSON attributes</td><td>Auto Loader rescue mode or VARIANT</td></tr>
+    <tr><td>Strict governance</td><td>UC external locations and volumes, managed tables, failOnNewColumns</td></tr>
+  </table></div>
+</section>
+
+<!-- 13 -->
+<section id="terms">
+  <div class="sec-num">13</div>
+  <h2>Don't confuse these four</h2>
+  <div class="terms">
+    <div class="card"><span class="tag" style="color:var(--accent)">Checkpoint</span><p class="cap">Auto Loader's record of which files are already loaded.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Change Data Feed</span><p class="cap">Delta's record of row inserts, updates and deletes by version. <code>table_changes()</code>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">High-water mark</span><p class="cap">The last cursor value a query-based connector or JDBC job pulled.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">Watermark</span><p class="cap">Spark streaming setting for how late events can arrive in windowed work. Not part of Auto Loader.</p></div>
+  </div>
+  <p class="note">Parked for a later session: Structured Streaming in depth, watermarks and stateful operations, plus hands-on practicals.</p>
+</section>
+
+<footer>Study notes for Asim's Databricks Data Engineer Professional prep. Option names and version details come from study discussion; confirm against the Databricks docs before the exam.</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.querySelectorAll('animateMotion, animate').forEach(function(a){ a.parentNode && a.parentNode.removeChild(a); });
+
+  function el(t,c,h){var e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;}
+  function log(box,cls,msg){var s=el('span',cls,msg); box.appendChild(s); box.scrollTop=box.scrollHeight;}
+  function bump(n){n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');}
+
+  /* Auto Loader sim */
+  var landing=[{n:'file_001.json',m:1},{n:'file_002.json',m:1}], chk={}, rows=0, next=3, clock=1;
+  var F=document.getElementById('alFiles'), C=document.getElementById('alChk'), R=document.getElementById('alRows'), L=document.getElementById('alLog');
+  function drawAL(){
+    F.innerHTML=''; landing.forEach(function(f){var d=el('div','file'+(chk[f.n]>=f.m?' done':''),'<span>'+f.n+'</span><span class="v">v'+f.m+'</span>'); F.appendChild(d);});
+    C.innerHTML=''; var k=Object.keys(chk); if(!k.length) C.appendChild(el('div','cap','empty'));
+    k.forEach(function(n){C.appendChild(el('div','file','<span>'+n+'</span><span class="v">v'+chk[n]+' ✓</span>'));});
+    R.textContent=rows.toLocaleString();
+  }
+  document.getElementById('alNew').onclick=function(){var n='file_'+String(next++).padStart(3,'0')+'.json'; landing.push({n:n,m:1}); log(L,'skip','+ '+n+' landed in s3://landing/fico/'); drawAL();};
+  document.getElementById('alReplace').onclick=function(){var f=landing.find(function(x){return x.n==='file_002.json'}); if(!f){f={n:'file_002.json',m:0};landing.push(f);} f.m++; log(L,'skip','~ file_002.json overwritten by source (new modification time, same name)'); drawAL();};
+  document.getElementById('alReset').onclick=function(){chk={}; log(L,'bad','! checkpoint deleted: next run reloads every file'); drawAL();};
+  document.getElementById('alRun').onclick=function(){
+    var over=document.getElementById('alOver').checked, loaded=0;
+    log(L,'skip','> run #'+(clock++)+' · availableNow');
+    landing.forEach(function(f){
+      if(chk[f.n]==null){chk[f.n]=f.m; rows+=1000; loaded++; log(L,'ok','  loaded '+f.n+' (+1,000 rows)');}
+      else if(f.m>chk[f.n]){
+        if(over){chk[f.n]=f.m; rows+=1000; loaded++; log(L,'bad','  reloaded '+f.n+' (+1,000 rows). Old rows still there: delete or MERGE');}
+        else log(L,'skip','  skipped '+f.n+': path already in checkpoint, change ignored');
+      } else log(L,'skip','  skipped '+f.n+': already processed');
+    });
+    log(L,loaded?'ok':'skip','  done · '+loaded+' file(s) loaded, stream stops');
+    drawAL(); bump(R);
+  };
+  drawAL();
+
+  /* schema evolution */
+  var seT=document.getElementById('seTable'), seM=document.getElementById('seMsg');
+  function seDraw(cols,rowsData){
+    var h='<tr>'+cols.map(function(c){return '<th>'+c+'</th>'}).join('')+'</tr>';
+    rowsData.forEach(function(r){h+='<tr>'+r.map(function(v){return '<td>'+v+'</td>'}).join('')+'</tr>'});
+    seT.innerHTML=h;
+  }
+  var base=[['C1001','742'],['C1002','688']];
+  seDraw(['customer_id','fico_score'],base);
+  document.getElementById('seMode').onchange=function(){seDraw(['customer_id','fico_score'],base); seM.textContent='Pick a mode and send the file.'; seM.className='note';};
+  document.getElementById('seGo').onclick=function(){
+    var m=document.getElementById('seMode').value;
+    if(m==='addNewColumns'){seDraw(['customer_id','fico_score','bnpl_score'],[['C1001','742','<span class="chip">NULL</span>'],['C1002','688','<span class="chip">NULL</span>'],['C1003','701','<span class="chip ok">0.82</span>']]);
+      seM.innerHTML='Stream <b>failed once</b>, saved the new schema, and loaded after the restart. A job with retries restarts it for you.'; seM.className='note';}
+    else if(m==='rescue'){seDraw(['customer_id','fico_score','_rescued_data'],[['C1001','742','NULL'],['C1002','688','NULL'],['C1003','701','<code>{"bnpl_score":0.82, "_file_path":"…/f3.json"}</code>']]);
+      seM.innerHTML='Schema unchanged, <b>stream never stopped</b>. The new attribute waits in _rescued_data for Silver to pick out.'; seM.className='note';}
+    else if(m==='failOnNewColumns'){seDraw(['customer_id','fico_score'],base);
+      seM.innerHTML='<b>Stream failed and stays down</b> until you update the schema yourself. Strictest option.'; seM.className='note trap';}
+    else {seDraw(['customer_id','fico_score'],base.concat([['C1003','701']]));
+      seM.innerHTML='Row loaded, <b>bnpl_score silently dropped</b>. Add rescuedDataColumn if you want to keep it.'; seM.className='note trap';}
+  };
+
+  /* COPY INTO sim */
+  var ciFiles=['rewards_20261101.csv','rewards_20261102.csv','rewards_20261103.csv'], ciDone={}, ciRows=0, ciDay=4;
+  var CF=document.getElementById('ciFiles'), CR=document.getElementById('ciRows'), CL=document.getElementById('ciLog');
+  function ciDraw(){CF.innerHTML=''; ciFiles.forEach(function(n){CF.appendChild(el('div','file'+(ciDone[n]?' done':''),'<span>'+n+'</span><span class="v">'+(ciDone[n]?'loaded':'new')+'</span>'));}); CR.textContent=ciRows.toLocaleString();}
+  document.getElementById('ciNew').onclick=function(){var n='rewards_202611'+String(ciDay++).padStart(2,'0')+'.csv'; ciFiles.push(n); log(CL,'skip','+ '+n+' dropped by vendor'); ciDraw();};
+  document.getElementById('ciRun').onclick=function(){
+    var force=document.getElementById('ciForce').checked, n=0;
+    log(CL,'skip','> COPY INTO rewards.bronze.rewards_file'+(force?" … COPY_OPTIONS ('force'='true')":''));
+    ciFiles.forEach(function(f){ if(!ciDone[f]||force){ if(ciDone[f]) log(CL,'bad','  reloaded '+f+' (+300 duplicate rows)'); else log(CL,'ok','  loaded '+f+' (+300 rows)'); ciDone[f]=1; ciRows+=300; n++; } });
+    log(CL,n?'ok':'skip','  num_affected_rows: '+(n*300)+(n?'':' · nothing new, idempotent'));
+    ciDraw(); bump(CR);
+  };
+  ciDraw();
+
+  /* JDBC slider */
+  var np=document.getElementById('np');
+  function npDraw(){
+    var p=+np.value, B=document.getElementById('npBars'); B.innerHTML='';
+    for(var i=0;i<p;i++){var b=el('div','bar'); b.style.width=(100/1)+'%'; b.style.animationDuration=(1.2+ (p===1?2:0))+'s'; B.appendChild(b);}
+    document.getElementById('npVal').textContent=p; document.getElementById('npCode').textContent=p;
+    var mins=Math.round(80/p);
+    document.getElementById('npTxt').textContent=p+' parallel quer'+(p>1?'ies':'y')+', each reading about '+Math.round(50/p*10)/10+' million rows. Rough time: ~'+mins+' min'+(p===1?' (one connection, one task)':'');
+    document.getElementById('npMeter').style.width=Math.min(100,p*6.25)+'%';
+  }
+  np.oninput=npDraw; npDraw();
+
+  /* decision */
+  var Q={
+    files:{q:'How many files, and how often?',o:[['Millions, or continuous','Auto Loader + managed file events','Scales to millions of files, schema evolution and rescued data.'],['A daily drop, SQL team','COPY INTO','Simple, idempotent, no checkpoint to manage.'],['One file, one time','Upload UI or read_files','No pipeline needed.']]},
+    db:{q:'Does the source have CDC, and is there a native connector?',o:[['Native connector + CDC (Oracle, SQL Server…)','Lakeflow managed connector','Log-based CDC applies inserts, updates and deletes for you.'],['No CDC, has a last_updated column','Query-based connector','Uses a high-water mark. Misses hard deletes.'],['Need full control','Spark JDBC + Lakeflow Jobs','Partition the read and store your own high-water mark.'],['Bank already runs GoldenGate/Qlik','External CDC tool → S3 → Auto Loader','Then MERGE into Silver.']]},
+    saas:{q:'Is there a native managed connector?',o:[['Yes (Salesforce, Workday…)','Lakeflow managed SaaS connector','No code, OAuth connection, incremental.'],['No','Partner tool (Fivetran) or REST notebook','Partner Connect for speed, REST for control.']]},
+    stream:{q:'What kind of stream?',o:[['Kafka, Kinesis, Event Hubs','Structured Streaming source','A standard connector. Add watermarks only for windowed work.'],['Files arriving constantly','Auto Loader, continuous trigger','Files are files, even when they arrive fast.']]},
+    api:{q:'Do you want a raw copy?',o:[['Yes (recommended)','Notebook → Volume → Auto Loader','Keeps raw JSON for replay. Schedule with Lakeflow Jobs.'],['No, small reference data','Notebook → Delta table directly','Simpler, but no raw history.']]}
+  };
+  var q2=document.getElementById('dq2'), ans=document.getElementById('dAns');
+  document.querySelectorAll('#dq1 button').forEach(function(b){b.onclick=function(){
+    document.querySelectorAll('#dq1 button').forEach(function(x){x.classList.remove('primary')}); b.classList.add('primary');
+    var s=Q[b.dataset.s]; q2.innerHTML='<span class="cap">'+s.q+'</span>'; ans.hidden=true;
+    s.o.forEach(function(o){var bb=el('button',null,o[0]); bb.onclick=function(){q2.querySelectorAll('button').forEach(function(x){x.classList.remove('primary')}); bb.classList.add('primary'); document.getElementById('dPick').textContent=o[1]; document.getElementById('dWhy').textContent=o[2]; ans.hidden=false;}; q2.appendChild(bb);});
+  };});
+  document.querySelector('#dq1 button').click();
+  q2.querySelector('button').click();
+
+  /* nav highlight */
+  var links=[].slice.call(document.querySelectorAll('#rail a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)});}});},{rootMargin:'-40% 0px -55% 0px'});
+    document.querySelectorAll('section[id]').forEach(function(s){io.observe(s)});
+  }
+})();
+</script>
+
+</body>
+</html>
