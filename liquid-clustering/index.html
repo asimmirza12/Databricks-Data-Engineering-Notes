@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Liquid Clustering Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single study column with a sticky section rail; each section = idea, live animation, then the "what if" table. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#16202A; --muted:#566370; --line:#D3DAE1;
+  --accent:#1F5FBF; --accent-soft:#E3ECFA;
+  --bronze:#A8622B; --silver:#73838F; --gold:#B38A12;
+  --ok:#23845A; --warn:#B8382B; --code-bg:#EAEEF2;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:700;margin-top:6px}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+:not(pre)>code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0;font-size:.85rem;line-height:1.55}
+pre code{font-size:inherit}
+.c-k{color:var(--accent)} .c-s{color:var(--ok)} .c-c{color:var(--muted)}
+a{color:var(--accent)}
+
+/* nav */
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:4px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+nav.rail a{flex:none;text-decoration:none;color:var(--muted);font-size:.82rem;font-weight:500;padding:5px 10px;border-radius:999px;white-space:nowrap}
+nav.rail a:hover,nav.rail a:focus-visible{color:var(--ink);background:var(--accent-soft);outline:none}
+nav.rail a.on{color:var(--accent);background:var(--accent-soft)}
+
+/* hero */
+header.hero{padding-block:40px 24px;display:grid;gap:16px}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.1rem;color:var(--muted)}
+.medal{display:flex;flex-wrap:wrap;gap:8px}
+.medal span{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+
+section{padding-block:44px;border-top:1px solid var(--line);display:grid;gap:18px}
+section > *{min-width:0}
+.sec-num{font-family:var(--f-mono);font-size:.78rem;color:var(--accent);letter-spacing:.08em}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px}
+.stage svg{width:100%;height:auto;display:block}
+.cap{font-size:.86rem;color:var(--muted)}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 12px;color:var(--ink);font-size:.95rem}
+.trap{border-left-color:var(--warn)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px;align-content:start}
+.card h3{margin:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--code-bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.whatif th:first-child{width:42%}
+
+/* controls */
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font-family:var(--f-body);font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.tog{display:inline-flex;gap:6px;align-items:center;font-size:.86rem;cursor:pointer}
+.log{font-family:var(--f-mono);font-size:.78rem;background:var(--code-bg);border-radius:8px;padding:10px 12px;min-height:84px;max-height:170px;overflow:auto;display:grid;gap:2px;align-content:start}
+.log .ok{color:var(--ok)} .log .skip{color:var(--muted)} .log .bad{color:var(--warn)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--ok);border-color:var(--ok)} .chip.bad{color:var(--warn);border-color:var(--warn)} .chip.acc{color:var(--accent);border-color:var(--accent)}
+
+/* auto loader sim */
+.al{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.al > div{min-width:0}
+.pane{border:1px dashed var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;align-content:start;min-height:150px}
+.pane h4{margin:0;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.file{font-family:var(--f-mono);font-size:.78rem;padding:5px 8px;border-radius:6px;background:var(--code-bg);display:flex;justify-content:space-between;gap:8px;animation:pop .35s ease-out}
+.file.done{opacity:.55}
+.file .v{color:var(--muted)}
+.arrow{display:grid;place-items:center;font-family:var(--f-mono);color:var(--accent);font-size:.75rem;text-align:center}
+.tblcount{font-family:var(--f-display);font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+@keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none}}
+.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+@media (max-width:620px){.al{grid-template-columns:1fr}.arrow{transform:rotate(90deg);min-height:30px}}
+
+/* pattern lanes */
+.lanes{display:grid;gap:12px}
+.lane{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center}
+.lane b{font-size:.85rem}
+.track{position:relative;height:28px;background:var(--code-bg);border-radius:6px;overflow:hidden}
+.blk{position:absolute;top:5px;height:18px;border-radius:4px;background:var(--accent)}
+.full .blk{width:30%;animation:fullrun 6s linear infinite;background:var(--bronze)}
+.full .blk:nth-child(2){animation-delay:-3s}
+@keyframes fullrun{0%{left:-30%}100%{left:100%}}
+.inc .blk{width:7%;animation:fullrun 6s linear infinite}
+.inc .blk:nth-child(2){animation-delay:-2s}.inc .blk:nth-child(3){animation-delay:-4s}
+.str .blk{width:3%;animation:fullrun 3s linear infinite;background:var(--ok)}
+.str .blk:nth-child(2){animation-delay:-.5s}.str .blk:nth-child(3){animation-delay:-1s}.str .blk:nth-child(4){animation-delay:-1.5s}.str .blk:nth-child(5){animation-delay:-2s}.str .blk:nth-child(6){animation-delay:-2.5s}
+@media (max-width:520px){.lane{grid-template-columns:1fr}}
+
+/* tree */
+.tree{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tree ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* jobs dag */
+.dag{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.task{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;background:var(--surface);animation:lit 8s infinite}
+.task:nth-of-type(2){animation-delay:2s}.task:nth-of-type(3){animation-delay:4s}.task:nth-of-type(4){animation-delay:6s}
+@keyframes lit{0%,20%{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}25%,100%{border-color:var(--line);box-shadow:none}}
+.dag .to{color:var(--muted);font-family:var(--f-mono)}
+
+/* slider */
+.bars{display:grid;gap:3px}
+.bar{height:8px;border-radius:3px;background:var(--accent);transform-origin:left;animation:grow 1.2s ease-out}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+input[type=range]{width:min(320px,100%)}
+.meter{height:10px;border-radius:5px;background:var(--code-bg);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--warn);transition:width .4s}
+
+/* decision */
+.dec{display:grid;gap:12px}
+.answer{border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:14px;display:grid;gap:4px}
+.answer strong{font-family:var(--f-display);font-size:1.25rem}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+footer{padding-block:30px 50px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .full .blk:nth-child(1){left:10%}.full .blk:nth-child(2){left:55%}
+  .inc .blk:nth-child(1){left:15%}.inc .blk:nth-child(2){left:45%}.inc .blk:nth-child(3){left:75%}
+  .str .blk:nth-child(n){left:calc(var(--i,0)*16%)}
+}
+
+/* liquid clustering page: file tiles, query hits, curves */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.tile{font-family:var(--f-mono);font-size:.72rem;border-radius:8px;padding:7px 8px;border:2px solid var(--line);background:var(--surface);display:grid;gap:2px;animation:pop .35s ease-out;min-width:0}
+.tile b{font-size:.74rem;color:var(--ink)}
+.tile .v{color:var(--muted)}
+.tile.raw{border-style:dashed;border-color:var(--bronze)}
+.tile.cl{border-color:var(--accent)}
+.tile.old{border-color:var(--silver)}
+.tile.read{border-color:var(--ok);background:var(--accent-soft)}
+.tile.skip{opacity:.4}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;border:2px solid var(--line);margin-right:5px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--code-bg);border-radius:8px;padding:8px 10px}
+.stat .cap{display:block}
+.stat .tblcount{font-size:1.5rem}
+.hitbox{animation:hitpulse 2.4s ease-in-out infinite}
+@keyframes hitpulse{0%,100%{stroke-width:2}50%{stroke-width:5}}
+.curves{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.out{display:grid;gap:8px}
+select{max-width:100%}
+.stage > *{min-width:0}
+.ctrls > *{min-width:0}
+</style>
+</head>
+<body>
+
+
+<nav class="rail" id="rail" aria-label="Sections">
+  <a href="../">← All notes</a>
+  <a href="#what">What is layout</a><a href="#history">The journey</a><a href="#partition">Partitioning</a><a href="#smallfiles">Small files</a>
+  <a href="#skipping">Data skipping</a><a href="#zorder">ZORDER</a><a href="#bloom">Bloom filters</a><a href="#liquid">Liquid clustering</a>
+  <a href="#optimize">OPTIMIZE</a><a href="#hilbert">Hilbert curve</a><a href="#keys">Change keys</a><a href="#limits">Rules</a>
+  <a href="#index">Is it an index?</a><a href="#vacuum">VACUUM</a><a href="#combos">Combinations</a><a href="#decide">Decide</a><a href="#terms">Don't confuse</a>
+</nav>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Databricks Data Engineer Professional · Section 5 · Cost &amp; Performance Optimization · 15%</div>
+  <h1>Liquid Clustering and the Layouts Before It</h1>
+  <p class="lede">How Delta tables decide which files a query must read. We start with Hive partitioning, small-file compaction, file statistics, ZORDER and Bloom filters, then reach liquid clustering. We finish with VACUUM and how to combine and order these commands safely.</p>
+  <div class="medal"><span style="color:var(--bronze)">Bronze · append-heavy</span><span style="color:var(--silver)">Silver · MERGE, filter by key</span><span style="color:var(--gold)">Gold · dashboard filters</span></div>
+</header>
+
+<!-- 00 -->
+<section id="what">
+  <div class="sec-num">00</div>
+  <h2>What is data layout, and what is liquid clustering?</h2>
+  <p>A Delta table is a folder of Parquet files plus a log. When you run a query, Spark has to decide which files to open. If the rows you want are spread across every file, it opens every file. If similar rows sit together, it can open a few and skip the rest.</p>
+  <p><b>Data layout</b> is how rows are arranged across files. <b>Liquid clustering</b> is Databricks' current way to arrange them. You name up to four columns, and <code>OPTIMIZE</code> rewrites the data so rows with similar values for those columns end up in the same files.</p>
+  <p>Bank example: <code>rewards.silver.card_txn</code> holds 2 billion card transactions from Oracle. The call-centre app looks up one customer's points for October. Without a good layout the query reads around 200 GB. With liquid clustering on <code>(customer_id, txn_date)</code> it reads one or two files.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 300" role="img" aria-label="Mixed rows go through OPTIMIZE into four clustered files; a query for one customer reads only the first file">
+      <defs>
+        <path id="lA" d="M165 70 C 230 70, 250 150, 300 150 L 400 150 C 450 150, 450 50, 500 50"/>
+        <path id="lB" d="M165 130 C 230 130, 250 150, 300 150 L 400 150 C 450 150, 450 115, 500 115"/>
+        <path id="lC" d="M165 190 C 230 190, 250 150, 300 150 L 400 150 C 450 150, 450 180, 500 180"/>
+        <path id="lD" d="M165 250 C 230 250, 250 150, 300 150 L 400 150 C 450 150, 450 245, 500 245"/>
+      </defs>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="var(--ink)">
+        <rect x="10" y="30" width="155" height="250" rx="8" fill="var(--code-bg)" stroke="var(--line)"/>
+        <text x="87" y="52" text-anchor="middle" font-weight="600">New rows · mixed</text>
+        <g>
+          <circle cx="40" cy="80" r="6" fill="var(--accent)"/><circle cx="70" cy="95" r="6" fill="var(--gold)"/><circle cx="110" cy="78" r="6" fill="var(--ok)"/><circle cx="140" cy="100" r="6" fill="var(--bronze)"/>
+          <circle cx="50" cy="130" r="6" fill="var(--ok)"/><circle cx="90" cy="140" r="6" fill="var(--accent)"/><circle cx="130" cy="125" r="6" fill="var(--gold)"/>
+          <circle cx="35" cy="175" r="6" fill="var(--bronze)"/><circle cx="75" cy="190" r="6" fill="var(--accent)"/><circle cx="120" cy="180" r="6" fill="var(--ok)"/><circle cx="145" cy="200" r="6" fill="var(--gold)"/>
+          <circle cx="45" cy="235" r="6" fill="var(--gold)"/><circle cx="85" cy="245" r="6" fill="var(--bronze)"/><circle cx="125" cy="232" r="6" fill="var(--accent)"/>
+        </g>
+        <text x="87" y="272" text-anchor="middle" font-size="10" fill="var(--muted)">colour = customer_id band</text>
+        <g fill="none" stroke="var(--line)" stroke-width="2"><use href="#lA"/><use href="#lB"/><use href="#lC"/><use href="#lD"/></g>
+        <rect x="300" y="122" width="100" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="350" y="146" text-anchor="middle" font-weight="700" fill="var(--accent)">OPTIMIZE</text>
+        <text x="350" y="164" text-anchor="middle" font-size="10" fill="var(--muted)">CLUSTER BY keys</text>
+        <rect class="hitbox" x="500" y="28" width="150" height="44" rx="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="512" y="47" font-weight="600">file A</text><text x="512" y="63" font-size="10" fill="var(--muted)">cust 1.00M – 1.25M</text>
+        <rect x="500" y="93" width="150" height="44" rx="6" fill="var(--surface)" stroke="var(--gold)" stroke-width="2"/>
+        <text x="512" y="112" font-weight="600">file B</text><text x="512" y="128" font-size="10" fill="var(--muted)">cust 1.25M – 1.50M</text>
+        <rect x="500" y="158" width="150" height="44" rx="6" fill="var(--surface)" stroke="var(--ok)" stroke-width="2"/>
+        <text x="512" y="177" font-weight="600">file C</text><text x="512" y="193" font-size="10" fill="var(--muted)">cust 1.50M – 1.75M</text>
+        <rect x="500" y="223" width="150" height="44" rx="6" fill="var(--surface)" stroke="var(--bronze)" stroke-width="2"/>
+        <text x="512" y="242" font-weight="600">file D</text><text x="512" y="258" font-size="10" fill="var(--muted)">cust 1.75M – 2.00M</text>
+        <text x="662" y="54" font-size="11" fill="var(--ok)" font-family="JetBrains Mono, monospace">READ ✓</text>
+        <text x="662" y="119" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">skip</text>
+        <text x="662" y="184" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">skip</text>
+        <text x="662" y="249" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">skip</text>
+        <text x="575" y="16" text-anchor="middle" font-size="11" fill="var(--accent)" font-family="JetBrains Mono, monospace">WHERE customer_id = 1029384</text>
+      </g>
+      <g class="moving">
+        <circle r="5" fill="var(--accent)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#lA"/></animateMotion></circle>
+        <circle r="5" fill="var(--gold)"><animateMotion dur="3s" begin=".75s" repeatCount="indefinite"><mpath href="#lB"/></animateMotion></circle>
+        <circle r="5" fill="var(--ok)"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite"><mpath href="#lC"/></animateMotion></circle>
+        <circle r="5" fill="var(--bronze)"><animateMotion dur="3s" begin="2.25s" repeatCount="indefinite"><mpath href="#lD"/></animateMotion></circle>
+      </g>
+    </svg>
+    <p class="cap">OPTIMIZE sorts rows into files by the clustering keys. Each file's min and max are saved in the Delta log, so a lookup reads one file and skips the rest.</p>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Which files to open?</h3><p class="cap">Decided from folder names (partitions) or min/max statistics in the Delta log.</p></div>
+    <div class="card"><h3>How are rows grouped?</h3><p class="cap">By partition folder, by ZORDER sort, or by liquid clustering keys.</p></div>
+    <div class="card"><h3>Who keeps it tidy?</h3><p class="cap">You (OPTIMIZE and VACUUM on a schedule) or predictive optimization.</p></div>
+  </div>
+</section>
+
+<!-- 01 -->
+<section id="history">
+  <div class="sec-num">01</div>
+  <h2>The journey: every approach before liquid clustering</h2>
+  <p>Each step fixed a problem left by the one before. You still meet all of them on older tables and in exam questions, so know what each does and why it was replaced.</p>
+  <div class="tree">
+    <div class="card"><span class="tag" style="color:var(--bronze)">1 · Hive-style partitioning</span><h3>Folders per value</h3><p class="cap"><code>PARTITIONED BY (txn_date)</code> makes one folder per date. Fast date filters. Breaks on high-cardinality columns: too many folders, tiny files.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">2 · Bucketing</span><h3>Hash into N buckets</h3><p class="cap"><code>CLUSTERED BY … INTO 64 BUCKETS</code> in Hive and Parquet tables. Not supported on Delta tables. Know the name, don't use it.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">3 · OPTIMIZE (bin-packing)</span><h3>Fix small files</h3><p class="cap">Merges many small files into large ones (target ~1 GB). Speeds reads, does not sort rows.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">4 · Data skipping stats</span><h3>Min/max per file</h3><p class="cap">Automatic on every Delta table. Only helps if rows are already grouped.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">5 · ZORDER</span><h3>Sort inside files</h3><p class="cap"><code>OPTIMIZE … ZORDER BY (customer_id)</code>. Co-locates values on several columns. Not incremental, rewrites a lot.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">6 · Bloom filter index</span><h3>"Is this value maybe here?"</h3><p class="cap">Optional index files per data file. Helps needle lookups on non-sorted columns. Rarely needed now.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">7 · Optimized writes + auto compaction</span><h3>Fewer small files at write time</h3><p class="cap">Table properties that shuffle before writing and compact after. Reduce the need for manual OPTIMIZE.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">8 · Liquid clustering</span><h3>Flexible, incremental</h3><p class="cap"><code>CLUSTER BY (customer_id, txn_date)</code>. Replaces partitioning and ZORDER. Keys can change without a rewrite.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">9 · CLUSTER BY AUTO + predictive optimization</span><h3>Databricks decides</h3><p class="cap">Picks keys from query history and runs OPTIMIZE, VACUUM and ANALYZE for you on UC managed tables.</p></div>
+  </div>
+  <div class="stage lanes">
+    <div class="lane full"><b>ZORDER</b><div class="track"><span class="blk"></span><span class="blk"></span></div></div>
+    <div class="lane inc"><b>Liquid</b><div class="track"><span class="blk"></span><span class="blk"></span><span class="blk"></span></div></div>
+    <div class="lane str"><b>Predictive</b><div class="track"><span class="blk" style="--i:0"></span><span class="blk" style="--i:1"></span><span class="blk" style="--i:2"></span><span class="blk" style="--i:3"></span><span class="blk" style="--i:4"></span><span class="blk" style="--i:5"></span></div></div>
+    <p class="cap">ZORDER rewrites big blocks each run. Liquid clustering rewrites only the new slice. Predictive optimization keeps doing small bits of maintenance in the background.</p>
+  </div>
+</section>
+
+<!-- 02 -->
+<section id="partition">
+  <div class="sec-num">02</div>
+  <h2>Hive-style partitioning</h2>
+  <p>Partitioning splits a table into folders, one per value of the partition column. A filter on that column lets Spark skip whole folders. This is called <b>partition pruning</b>, and it does not even need the file statistics.</p>
+  <p>It works when the column has few values and every query filters on it. It fails badly on columns with many values, because each folder holds a few tiny files.</p>
+<pre><code><span class="c-k">CREATE TABLE</span> rewards.silver.card_txn (
+  txn_id BIGINT, customer_id BIGINT, txn_date DATE,
+  merchant_cat STRING, points_earned INT
+)
+<span class="c-k">PARTITIONED BY</span> (txn_date);   <span class="c-c">-- one folder per day: txn_date=2026-10-01/</span>
+
+<span class="c-c">-- partition pruning: only the October folders are listed and read</span>
+<span class="c-k">SELECT SUM</span>(points_earned) <span class="c-k">FROM</span> rewards.silver.card_txn
+<span class="c-k">WHERE</span> txn_date <span class="c-k">BETWEEN</span> <span class="c-s">'2026-10-01'</span> <span class="c-k">AND</span> <span class="c-s">'2026-10-31'</span>;</code></pre>
+<pre><code><span class="c-c"># Python equivalent</span>
+(df.write.format(<span class="c-s">"delta"</span>)
+   .partitionBy(<span class="c-s">"txn_date"</span>)
+   .saveAsTable(<span class="c-s">"rewards.silver.card_txn"</span>))</code></pre>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="pCol" class="cap">PARTITIONED BY</label>
+      <select id="pCol">
+        <option value="none">nothing (one table)</option>
+        <option value="month">txn_month (36 values)</option>
+        <option value="date" selected>txn_date (1,095 values)</option>
+        <option value="mcc">merchant_cat (20 values)</option>
+        <option value="cust">customer_id (2,000,000 values)</option>
+      </select>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="cap">Folders</span><span class="tblcount" id="pFold">0</span></div>
+      <div class="stat"><span class="cap">Data per folder</span><span class="tblcount" id="pSize">0</span></div>
+      <div class="stat"><span class="cap">Date filter</span><span class="tblcount" id="pDate" style="font-size:1rem">-</span></div>
+      <div class="stat"><span class="cap">Customer filter</span><span class="tblcount" id="pCust" style="font-size:1rem">-</span></div>
+    </div>
+    <div><div class="cap">Small-file risk</div><div class="meter"><i id="pMeter"></i></div></div>
+    <div id="pMsg" class="note"></div>
+    <p class="cap">Table: 2 billion rows, about 200 GB, three years of card transactions.</p>
+  </div>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Partition by a low-cardinality column (date, region)</td><td>Fast pruning when filters use it</td></tr>
+    <tr><td>Partition by <code>customer_id</code></td><td>Millions of folders and tiny files. Listing and reading become very slow</td></tr>
+    <tr><td>Query does not filter on the partition column</td><td>No pruning. Every folder is read</td></tr>
+    <tr><td>Change the partition column later</td><td>Full rewrite: CTAS or <code>REPLACE TABLE</code></td></tr>
+    <tr><td>Filter wraps the column, e.g. <code>year(txn_date) = 2026</code></td><td>May lose pruning unless a generated column is used. Filter the raw column instead</td></tr>
+    <tr><td>Two partition columns (date, merchant_cat)</td><td>Folders multiply: 1,095 × 20 = 21,900</td></tr>
+  </table></div>
+  <p class="note">Databricks guidance: don't partition tables under about 1 TB, and keep each partition at least about 1 GB. Use liquid clustering for new tables.</p>
+  <p class="note trap">Partitioning and liquid clustering cannot be used on the same table. Exam questions love this.</p>
+</section>
+
+<!-- 03 -->
+<section id="smallfiles">
+  <div class="sec-num">03</div>
+  <h2>The small-file problem and OPTIMIZE (bin-packing)</h2>
+  <p>Every write creates new files. A streaming job writing every minute, or a partitioned table, quickly ends up with thousands of files of a few MB each. Opening each file has a fixed cost, so many small files are slow even when the total data is small.</p>
+  <p>Plain <code>OPTIMIZE</code> fixes this by merging small files into large ones. This is called <b>bin-packing</b>. It does not sort rows. Old files are only marked as removed in the log, so they still take storage until <code>VACUUM</code>.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="sfWrite">Streaming micro-batch (+40 files)</button>
+      <button id="sfOpt" class="primary">Run OPTIMIZE</button>
+      <label class="tog"><input type="checkbox" id="sfOW"> optimizeWrite</label>
+      <label class="tog"><input type="checkbox" id="sfAC"> autoCompact</label>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="cap">Live files</span><span class="tblcount" id="sfFiles">0</span></div>
+      <div class="stat"><span class="cap">Average file size</span><span class="tblcount" id="sfAvg">0</span></div>
+      <div class="stat"><span class="cap">Removed files (still in storage)</span><span class="tblcount" id="sfDead">0</span></div>
+    </div>
+    <div><div class="cap">Query time (relative)</div><div class="meter"><i id="sfMeter"></i></div></div>
+    <div class="log" id="sfLog" aria-live="polite"><span class="skip">Each micro-batch writes 2 GB of card transactions.</span></div>
+  </div>
+<pre><code><span class="c-k">OPTIMIZE</span> rewards.bronze.card_txn;                              <span class="c-c">-- whole table</span>
+<span class="c-k">OPTIMIZE</span> rewards.bronze.card_txn <span class="c-k">WHERE</span> txn_date >= <span class="c-s">'2026-11-01'</span>;  <span class="c-c">-- partitioned table: only these partitions</span>
+
+<span class="c-c">-- reduce small files at write time</span>
+<span class="c-k">ALTER TABLE</span> rewards.bronze.card_txn <span class="c-k">SET TBLPROPERTIES</span> (
+  <span class="c-s">'delta.autoOptimize.optimizeWrite'</span> = <span class="c-s">'true'</span>,   <span class="c-c">-- shuffle before write, fewer larger files</span>
+  <span class="c-s">'delta.autoOptimize.autoCompact'</span>   = <span class="c-s">'true'</span>    <span class="c-c">-- small compaction right after the write</span>
+);</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Run <code>OPTIMIZE</code> twice in a row</td><td>Second run does almost nothing: files are already large. Idempotent</td></tr>
+    <tr><td><code>OPTIMIZE … WHERE</code> on a non-partition column</td><td>Error on partitioned tables: the WHERE may only use partition columns</td></tr>
+    <tr><td>Turn on <code>optimizeWrite</code></td><td>Fewer, bigger files per write. Adds a shuffle, so writes are a bit slower</td></tr>
+    <tr><td>Turn on <code>autoCompact</code></td><td>Small files merged after each write (target about 128 MB). Not a full OPTIMIZE</td></tr>
+    <tr><td>Never run VACUUM after OPTIMIZE</td><td>Storage grows: old small files stay on disk for time travel</td></tr>
+    <tr><td>Predictive optimization on</td><td>Databricks decides when to OPTIMIZE. No schedule needed</td></tr>
+  </table></div>
+  <p class="note">OPTIMIZE is a data rewrite, not a data change. Readers see the same rows, and it shows in <code>DESCRIBE HISTORY</code> as an OPTIMIZE operation.</p>
+</section>
+
+<!-- 04 -->
+<section id="skipping">
+  <div class="sec-num">04</div>
+  <h2>Data skipping: the statistics in the Delta log</h2>
+  <p>Every time Delta writes a Parquet file, it records statistics for that file in the transaction log: row count, min, max and null count per column. At query time Delta reads these numbers and skips any file whose range cannot contain the value you asked for.</p>
+  <p>This is not a separate index file. It sits in <code>_delta_log/*.json</code> and the checkpoint Parquet files. It exists on every Delta table. But it only helps when similar values are grouped, which is what partitioning, ZORDER and liquid clustering do.</p>
+<pre><code><span class="c-c">// one "add" entry in _delta_log/00000000000000000042.json (simplified)</span>
+{ <span class="c-s">"add"</span>: {
+    <span class="c-s">"path"</span>: <span class="c-s">"part-00042-abc.parquet"</span>,
+    <span class="c-s">"stats"</span>: {
+      <span class="c-s">"numRecords"</span>: 1250000,
+      <span class="c-s">"minValues"</span>: { <span class="c-s">"customer_id"</span>: 1000000, <span class="c-s">"txn_date"</span>: <span class="c-s">"2026-10-01"</span> },
+      <span class="c-s">"maxValues"</span>: { <span class="c-s">"customer_id"</span>: 1049999, <span class="c-s">"txn_date"</span>: <span class="c-s">"2026-10-31"</span> },
+      <span class="c-s">"nullCount"</span>: { <span class="c-s">"customer_id"</span>: 0, <span class="c-s">"txn_date"</span>: 0 } } } }</code></pre>
+  <h3>Try it: same query, different layouts</h3>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="skLayout" class="cap">Layout</label>
+      <select id="skLayout">
+        <option value="none">No layout (append order)</option>
+        <option value="part">PARTITIONED BY (txn_month)</option>
+        <option value="z">OPTIMIZE ZORDER BY (customer_id)</option>
+        <option value="liq" selected>CLUSTER BY (customer_id, txn_date)</option>
+      </select>
+      <label for="skQ" class="cap">Filter</label>
+      <select id="skQ">
+        <option value="cust">customer_id = 1029384</option>
+        <option value="date">txn_date in Oct 2026</option>
+        <option value="both">both</option>
+        <option value="mcc">merchant_cat = 'Dining'</option>
+      </select>
+    </div>
+    <div class="legend"><span><i style="border-color:var(--ok);background:var(--accent-soft)"></i>read</span><span><i style="opacity:.4"></i>skipped</span></div>
+    <div class="tiles" id="skTiles"></div>
+    <div class="stats">
+      <div class="stat"><span class="cap">Files read</span><span class="tblcount" id="skRead">0</span></div>
+      <div class="stat"><span class="cap">Data scanned</span><span class="tblcount" id="skGB">0</span></div>
+    </div>
+    <div id="skMsg" class="note"></div>
+    <p class="cap">12 files of about 16 GB each, customers 1.0M–2.0M, dates Jan–Dec 2026. Simplified: real clustered files have less tidy ranges.</p>
+  </div>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Filter column is beyond the first 32 columns</td><td>No stats collected for it, so no skipping</td></tr>
+    <tr><td><code>delta.dataSkippingNumIndexedCols = 40</code></td><td>Stats on the first 40 columns. Slightly slower writes</td></tr>
+    <tr><td><code>delta.dataSkippingStatsColumns = 'customer_id,txn_date'</code></td><td>Stats only on the named columns, any position</td></tr>
+    <tr><td>Changed stats columns on an existing table</td><td>Old files keep old stats. Run <code>ANALYZE TABLE … COMPUTE DELTA STATISTICS</code></td></tr>
+    <tr><td>Long free-text column in the first 32</td><td>Stats on long strings are costly and rarely useful. Move it later or exclude it</td></tr>
+    <tr><td>Filter uses a function, e.g. <code>upper(merchant_cat)</code></td><td>Skipping may not apply. Filter the raw value</td></tr>
+  </table></div>
+  <p class="note trap">Stats alone don't make queries fast. On an unsorted table every file's min/max spans everything, so nothing is skipped.</p>
+  <p class="note">To see skipping in action, open the query profile and compare "files read" with "files pruned".</p>
+</section>
+
+<!-- 05 -->
+<section id="zorder">
+  <div class="sec-num">05</div>
+  <h2>ZORDER: the previous answer for many columns</h2>
+  <p>ZORDER is an option on OPTIMIZE. It sorts rows along a Z-shaped space-filling curve, so rows close in several columns land in the same file. That makes the min/max ranges narrow and data skipping works.</p>
+  <p>The catch: ZORDER is not incremental. Each run rewrites all the data in scope, even files that were already sorted. The columns are not saved in the table, so every run must repeat them.</p>
+<pre><code><span class="c-c">-- the classic pre-liquid pattern: partition by date, ZORDER inside each partition</span>
+<span class="c-k">OPTIMIZE</span> rewards.silver.card_txn
+<span class="c-k">WHERE</span> txn_date >= current_date() - <span class="c-k">INTERVAL</span> 1 DAY   <span class="c-c">-- limit the rewrite to recent partitions</span>
+<span class="c-k">ZORDER BY</span> (customer_id, merchant_cat);</code></pre>
+<pre><code><span class="c-c"># Python</span>
+<span class="c-k">from</span> delta.tables <span class="c-k">import</span> DeltaTable
+(DeltaTable.forName(spark, <span class="c-s">"rewards.silver.card_txn"</span>)
+   .optimize()
+   .where(<span class="c-s">"txn_date >= '2026-11-01'"</span>)
+   .executeZOrderBy(<span class="c-s">"customer_id"</span>, <span class="c-s">"merchant_cat"</span>))</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td><code>ZORDER BY (txn_date)</code> when txn_date is the partition column</td><td>Error: you cannot ZORDER on a partition column</td></tr>
+    <tr><td>ZORDER on 1 column vs 4 columns</td><td>Each extra column weakens the grouping of the others. Two or three is the practical limit</td></tr>
+    <tr><td>Remove the <code>WHERE</code></td><td>Rewrites the whole table every run. Slow and expensive</td></tr>
+    <tr><td>Forget the ZORDER BY on the next OPTIMIZE</td><td>Bin-packing only. New data stays unsorted</td></tr>
+    <tr><td>ZORDER on a low-cardinality column (merchant_cat, 20 values)</td><td>Little gain. Pick high-cardinality filter columns</td></tr>
+    <tr><td>ZORDER on a liquid clustered table</td><td>Error. Use plain OPTIMIZE</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th></th><th>Partitioning + ZORDER</th><th>Liquid clustering</th></tr>
+    <tr><td>Keys stored on table</td><td>Partition yes, ZORDER no</td><td>Yes, in table metadata</td></tr>
+    <tr><td>Change keys</td><td>Full rewrite</td><td><code>ALTER TABLE … CLUSTER BY</code></td></tr>
+    <tr><td>High-cardinality columns</td><td>Partition: bad. ZORDER: fine</td><td>Fine</td></tr>
+    <tr><td>Rewrite cost per run</td><td>All data in scope</td><td>Only unclustered data</td></tr>
+    <tr><td>Skewed data (one huge customer)</td><td>Uneven partitions</td><td>Handles skew</td></tr>
+    <tr><td>Concurrent writers</td><td>Conflicts more likely</td><td>Row-level concurrency (verify in docs)</td></tr>
+  </table></div>
+</section>
+
+<!-- 06 -->
+<section id="bloom">
+  <div class="sec-num">06</div>
+  <h2>Bloom filter indexes</h2>
+  <p>A Bloom filter is a small structure that answers "is this value <i>possibly</i> in this file?" It can say "definitely not" or "maybe". Databricks writes one per data file, next to the data. It helps needle lookups on columns that are not sorted, like a card token or an email.</p>
+  <p>This one does create index files. It is optional, separate from clustering, and Databricks now rarely recommends it, because clustering plus predictive I/O covers most cases.</p>
+<pre><code><span class="c-k">CREATE BLOOMFILTER INDEX ON TABLE</span> rewards.silver.card_txn
+<span class="c-k">FOR COLUMNS</span> (card_token <span class="c-k">OPTIONS</span> (fpp = 0.1, numItems = 50000000));</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Lower <code>fpp</code> (0.1 → 0.01)</td><td>Fewer false "maybe" answers, bigger index files</td></tr>
+    <tr><td><code>numItems</code> too small</td><td>Filter fills up, more false positives</td></tr>
+    <tr><td>Create the index on an existing table</td><td>Only new or rewritten files get filters. Run OPTIMIZE to cover old ones</td></tr>
+    <tr><td>Range filter, e.g. <code>card_token > 'A'</code></td><td>No help. Bloom filters only answer equality and IN</td></tr>
+    <tr><td><code>DROP BLOOMFILTER INDEX ON TABLE …</code></td><td>Stops using and writing filters</td></tr>
+  </table></div>
+</section>
+
+<!-- 07 -->
+<section id="liquid">
+  <div class="sec-num">07</div>
+  <h2>Liquid clustering</h2>
+  <p>You name up to four clustering columns with <code>CLUSTER BY</code>. There are no folders. Databricks co-locates rows with similar values in the same files and records each file's min/max as usual.</p>
+  <p>It is "liquid" because the layout can change. You can switch keys later with one ALTER, nothing is rewritten right away, and each OPTIMIZE only clusters data that is not clustered yet.</p>
+<pre><code><span class="c-c">-- new table</span>
+<span class="c-k">CREATE TABLE</span> rewards.silver.card_txn (
+  txn_id BIGINT, customer_id BIGINT, txn_date DATE,
+  merchant_cat STRING, points_earned INT
+)
+<span class="c-k">CLUSTER BY</span> (customer_id, txn_date);
+
+<span class="c-c">-- from a query (CTAS) — also the way to convert a partitioned table</span>
+<span class="c-k">CREATE OR REPLACE TABLE</span> rewards.silver.card_txn_v2
+<span class="c-k">CLUSTER BY</span> (customer_id, txn_date)
+<span class="c-k">AS SELECT</span> * <span class="c-k">FROM</span> rewards.silver.card_txn;
+
+<span class="c-c">-- an existing unpartitioned Delta table</span>
+<span class="c-k">ALTER TABLE</span> rewards.gold.customer_points <span class="c-k">CLUSTER BY</span> (customer_id);
+
+<span class="c-c">-- check it</span>
+<span class="c-k">DESCRIBE DETAIL</span> rewards.silver.card_txn;   <span class="c-c">-- clusteringColumns: ["customer_id","txn_date"]</span></code></pre>
+<pre><code><span class="c-c"># Python: DataFrame writer</span>
+(df.write
+   .clusterBy(<span class="c-s">"customer_id"</span>, <span class="c-s">"txn_date"</span>)
+   .mode(<span class="c-s">"overwrite"</span>)
+   .saveAsTable(<span class="c-s">"rewards.silver.card_txn"</span>))
+
+<span class="c-c"># Python: DeltaTable builder</span>
+<span class="c-k">from</span> delta.tables <span class="c-k">import</span> DeltaTable
+(DeltaTable.createIfNotExists(spark)
+   .tableName(<span class="c-s">"rewards.silver.card_txn"</span>)
+   .addColumn(<span class="c-s">"customer_id"</span>, <span class="c-s">"BIGINT"</span>).addColumn(<span class="c-s">"txn_date"</span>, <span class="c-s">"DATE"</span>)
+   .addColumn(<span class="c-s">"points_earned"</span>, <span class="c-s">"INT"</span>)
+   .clusterBy(<span class="c-s">"customer_id"</span>, <span class="c-s">"txn_date"</span>)
+   .execute())</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Add a fifth clustering column</td><td>Error: maximum is 4</td></tr>
+    <tr><td>Cluster on column 40 of a wide table</td><td>Error: clustering columns need stats. Move it into the first 32 or use <code>dataSkippingStatsColumns</code></td></tr>
+    <tr><td>Add <code>PARTITIONED BY</code> too</td><td>Error: can't combine with partitioning</td></tr>
+    <tr><td><code>ALTER TABLE … CLUSTER BY</code> on a partitioned table</td><td>Not allowed. Recreate with CTAS or <code>REPLACE TABLE</code></td></tr>
+    <tr><td>Cluster on <code>txn_id</code> (unique, never filtered)</td><td>Valid but useless. Cluster on columns you filter by</td></tr>
+    <tr><td>Insert data and never run OPTIMIZE</td><td>New data stays mostly unclustered unless clustering on write or predictive optimization kicks in</td></tr>
+    <tr><td><code>CLUSTER BY AUTO</code></td><td>Databricks chooses keys from query history. Needs predictive optimization</td></tr>
+  </table></div>
+  <p class="note">Recommended for all new Delta tables, especially large ones, ones filtered on high-cardinality columns, skewed data, and tables whose query patterns change.</p>
+</section>
+
+<!-- 08 -->
+<section id="optimize">
+  <div class="sec-num">08</div>
+  <h2>How clustering actually happens: OPTIMIZE, incrementally</h2>
+  <p>Creating a clustered table does not sort anything by itself. Clustering happens when <code>OPTIMIZE</code> runs. It only rewrites files that are not clustered yet, so a daily run touches only the day's data. Some writes cluster on write when they are large enough (verify thresholds in docs), and predictive optimization can run OPTIMIZE for you.</p>
+  <p>Try it. Blue tiles are clustered on current keys, dashed bronze tiles are new data, grey tiles are clustered on the old keys after an ALTER.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="opIns">Daily INSERT (+2 files)</button>
+      <button id="opRun" class="primary">OPTIMIZE</button>
+      <button id="opFull">OPTIMIZE FULL</button>
+      <button id="opAlter">ALTER … CLUSTER BY (merchant_cat, txn_date)</button>
+      <label class="tog"><input type="checkbox" id="opPO"> Predictive optimization</label>
+      <button id="opReset">Reset</button>
+    </div>
+    <div class="legend"><span><i style="border-color:var(--accent)"></i>clustered</span><span><i style="border:2px dashed var(--bronze)"></i>not clustered</span><span><i style="border-color:var(--silver)"></i>old keys</span></div>
+    <div class="tiles" id="opTiles"></div>
+    <div class="stats">
+      <div class="stat"><span class="cap">Clustering keys</span><span class="tblcount" id="opKeys" style="font-size:.95rem">-</span></div>
+      <div class="stat"><span class="cap">Clustered on current keys</span><span class="tblcount" id="opPct">0</span></div>
+      <div class="stat"><span class="cap">Files rewritten last run</span><span class="tblcount" id="opRW">0</span></div>
+    </div>
+    <div class="log" id="opLog" aria-live="polite"><span class="skip">8 files, already clustered on (customer_id, txn_date).</span></div>
+  </div>
+<pre><code><span class="c-k">OPTIMIZE</span> rewards.silver.card_txn;        <span class="c-c">-- clusters only unclustered data</span>
+<span class="c-k">OPTIMIZE</span> rewards.silver.card_txn <span class="c-k">FULL</span>;   <span class="c-c">-- reclusters everything, e.g. after changing keys (newer runtimes, verify in docs)</span>
+
+<span class="c-c">-- let Databricks schedule it (UC managed tables)</span>
+<span class="c-k">ALTER SCHEMA</span> rewards.silver <span class="c-k">ENABLE PREDICTIVE OPTIMIZATION</span>;</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Run <code>OPTIMIZE</code> daily</td><td>Each run clusters the new slice only. Cheap</td></tr>
+    <tr><td>Run <code>OPTIMIZE FULL</code> daily</td><td>Rewrites the whole table each day. Expensive, rarely needed</td></tr>
+    <tr><td>Change keys, then plain OPTIMIZE</td><td>New data uses new keys. Old files stay on old keys</td></tr>
+    <tr><td>Change keys, then <code>OPTIMIZE FULL</code></td><td>Everything reclustered on the new keys</td></tr>
+    <tr><td>Predictive optimization on</td><td>No schedule needed. Runs OPTIMIZE when it is worth it</td></tr>
+    <tr><td><code>OPTIMIZE … ZORDER BY</code> on this table</td><td>Error</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What happens</th><th>Fix</th></tr>
+    <tr><td>Streaming job appends every minute, nobody runs OPTIMIZE</td><td>Small, unclustered files pile up. Lookups slow down</td><td>Schedule OPTIMIZE or turn on predictive optimization</td></tr>
+    <tr><td>Business starts filtering by merchant_cat</td><td>Old keys don't help the new filter</td><td><code>ALTER … CLUSTER BY</code>, then OPTIMIZE FULL in a quiet window</td></tr>
+    <tr><td>OPTIMIZE and a MERGE run at the same time</td><td>Usually fine on liquid tables thanks to row-level concurrency (verify in docs)</td><td>Retry on conflict</td></tr>
+    <tr><td>Storage keeps growing after OPTIMIZE</td><td>Old files kept for time travel</td><td>VACUUM (section 13)</td></tr>
+  </table></div>
+</section>
+
+<!-- 09 -->
+<section id="hilbert">
+  <div class="sec-num">09</div>
+  <h2>Z-order curve vs Hilbert curve</h2>
+  <p>To group rows on two columns at once, both ZORDER and liquid clustering walk a curve through a grid of (customer_id, txn_date) values. Rows next to each other on the curve go into the same file.</p>
+  <p>The Z curve jumps across the grid between blocks. The Hilbert curve, used by liquid clustering, only ever steps to a neighbouring cell. Fewer jumps means each file covers a tighter area, so min/max ranges stay narrow on both columns.</p>
+  <div class="curves">
+    <div class="stage">
+      <span class="tag" style="color:var(--gold)">ZORDER · Z curve</span>
+      <svg viewBox="0 0 200 200" role="img" aria-label="Z order curve on a 4 by 4 grid, with long jumps between blocks">
+        <g stroke="var(--line)" fill="none"><rect x="20" y="20" width="160" height="160"/><path d="M60 20V180M100 20V180M140 20V180M20 60H180M20 100H180M20 140H180"/></g>
+        <path id="zc" d="M40 160 L80 160 L40 120 L80 120 L120 160 L160 160 L120 120 L160 120 L40 80 L80 80 L40 40 L80 40 L120 80 L160 80 L120 40 L160 40" fill="none" stroke="var(--gold)" stroke-width="2.5"/>
+        <circle r="6" fill="var(--gold)" class="moving"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#zc"/></animateMotion></circle>
+        <text x="100" y="196" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">customer_id →</text>
+      </svg>
+    </div>
+    <div class="stage">
+      <span class="tag" style="color:var(--ok)">Liquid · Hilbert curve</span>
+      <svg viewBox="0 0 200 200" role="img" aria-label="Hilbert curve on a 4 by 4 grid, every step goes to a neighbouring cell">
+        <g stroke="var(--line)" fill="none"><rect x="20" y="20" width="160" height="160"/><path d="M60 20V180M100 20V180M140 20V180M20 60H180M20 100H180M20 140H180"/></g>
+        <path id="hc" d="M40 160 L80 160 L80 120 L40 120 L40 80 L40 40 L80 40 L80 80 L120 80 L120 40 L160 40 L160 80 L160 120 L120 120 L120 160 L160 160" fill="none" stroke="var(--ok)" stroke-width="2.5"/>
+        <circle r="6" fill="var(--ok)" class="moving"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#hc"/></animateMotion></circle>
+        <text x="100" y="196" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif">customer_id →</text>
+      </svg>
+    </div>
+  </div>
+  <p class="note">Exam level: know that liquid clustering uses a Hilbert curve for multi-column clustering and that it keeps data locality better than ZORDER. The internals beyond that are "verify in docs".</p>
+</section>
+
+<!-- 10 -->
+<section id="keys">
+  <div class="sec-num">10</div>
+  <h2>Changing keys: ALTER, AUTO and NONE</h2>
+  <p>Keys live in the table metadata. Changing them is a metadata change, not a rewrite. Pick a command and see what happens.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="kCmd" class="cap">Command</label>
+      <select id="kCmd">
+        <option value="alter">ALTER TABLE … CLUSTER BY (merchant_cat, txn_date)</option>
+        <option value="auto">ALTER TABLE … CLUSTER BY AUTO</option>
+        <option value="none">ALTER TABLE … CLUSTER BY NONE</option>
+        <option value="five">ALTER TABLE … CLUSTER BY (a, b, c, d, e)</option>
+        <option value="part">ALTER on a PARTITIONED table</option>
+      </select>
+    </div>
+    <div class="tbl"><table id="kOut" style="min-width:420px"></table></div>
+    <div id="kMsg" class="note"></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th></th><th>Manual keys</th><th>CLUSTER BY AUTO</th></tr>
+    <tr><td>Who picks keys</td><td>You</td><td>Databricks, from query history</td></tr>
+    <tr><td>Keys change over time</td><td>Only when you ALTER</td><td>Yes, when it predicts a benefit</td></tr>
+    <tr><td>Requires</td><td>Delta table</td><td>UC managed table + predictive optimization</td></tr>
+    <tr><td>Best for</td><td>Known, stable filters</td><td>New tables, unclear or shifting filters</td></tr>
+  </table></div>
+  <p class="note trap"><code>CLUSTER BY NONE</code> turns clustering off for future writes. It does not undo the existing layout.</p>
+</section>
+
+<!-- 11 -->
+<section id="limits">
+  <div class="sec-num">11</div>
+  <h2>Rules and limits to remember</h2>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--accent)">Max keys</span><h3>4 columns</h3><p class="cap">Fewer is usually better. One or two is common.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Stats needed</span><h3>First 32 columns</h3><p class="cap">Clustering columns must have stats collected.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">No mixing</span><h3>No PARTITIONED BY, no ZORDER</h3><p class="cap">Same table can't use both.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Cardinality</span><h3>High is fine</h3><p class="cap"><code>customer_id</code> with millions of values works.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Where it runs</span><h3>OPTIMIZE</h3><p class="cap">Plus clustering on write for large writes, and predictive optimization.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Runtime</span><h3>Recent DBR</h3><p class="cap">Feature support depends on runtime version. Verify in docs.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Convert</span><h3>Unpartitioned: ALTER</h3><p class="cap">Partitioned: recreate with CTAS or REPLACE TABLE.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Check</span><h3>DESCRIBE DETAIL</h3><p class="cap">Shows <code>clusteringColumns</code>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Streaming</span><h3>Works as a target</h3><p class="cap">Streaming writes into clustered tables are supported. Verify options in docs.</p></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="index">
+  <div class="sec-num">12</div>
+  <h2>Does clustering create an index?</h2>
+  <p>No. Liquid clustering does not create a separate index file like an Oracle B-tree. Fast lookups come from two things together: file statistics in the Delta log, and clustering that makes those statistics narrow.</p>
+  <p>Clustering only adds a little bookkeeping to the Delta log: the clustering columns as table metadata, and per-file markers showing which files are already clustered. That is what lets OPTIMIZE be incremental. Neither is a lookup structure.</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>Oracle B-tree index</th><th>Delta + liquid clustering</th><th>Bloom filter index</th></tr>
+    <tr><td>Separate structure</td><td>Yes, an index segment</td><td>No</td><td>Yes, files next to data</td></tr>
+    <tr><td>Granularity</td><td>Individual rows (ROWID)</td><td>Whole files</td><td>Whole files</td></tr>
+    <tr><td>Maintenance</td><td>Updated on every DML</td><td>During OPTIMIZE</td><td>On write</td></tr>
+    <tr><td>Best at</td><td>Single-row lookups</td><td>Scanning large ranges efficiently</td><td>Equality on unsorted columns</td></tr>
+    <tr><td>Closest Oracle idea</td><td>-</td><td>Exadata zone maps + ordered data</td><td>-</td></tr>
+  </table></div>
+  <p class="note trap">If an exam answer says "liquid clustering builds an index", it is wrong. It changes file layout and relies on statistics.</p>
+</section>
+
+<!-- 13 -->
+<section id="vacuum">
+  <div class="sec-num">13</div>
+  <h2>VACUUM: cleaning up what OPTIMIZE leaves behind</h2>
+  <p>OPTIMIZE writes new files and marks the old ones as removed in the log. The old files stay in storage so that time travel to older versions still works. <code>VACUUM</code> deletes removed files once they are older than the retention period, 7 days by default.</p>
+  <p>After VACUUM, you cannot time travel to versions that needed those files. The Delta log itself is cleaned separately, after <code>delta.logRetentionDuration</code> (30 days by default).</p>
+<pre><code><span class="c-k">VACUUM</span> rewards.silver.card_txn <span class="c-k">DRY RUN</span>;          <span class="c-c">-- list what would be deleted</span>
+<span class="c-k">VACUUM</span> rewards.silver.card_txn;                  <span class="c-c">-- default: keep 7 days</span>
+<span class="c-k">VACUUM</span> rewards.silver.card_txn <span class="c-k">RETAIN</span> 336 <span class="c-k">HOURS</span>; <span class="c-c">-- keep 14 days</span>
+
+<span class="c-k">ALTER TABLE</span> rewards.silver.card_txn <span class="c-k">SET TBLPROPERTIES</span> (
+  <span class="c-s">'delta.deletedFileRetentionDuration'</span> = <span class="c-s">'interval 30 days'</span>,  <span class="c-c">-- VACUUM default for this table</span>
+  <span class="c-s">'delta.logRetentionDuration'</span>         = <span class="c-s">'interval 30 days'</span>   <span class="c-c">-- how long history is kept</span>
+);</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td><code>RETAIN 0 HOURS</code></td><td>Fails by default. Safety check blocks retention under 7 days</td></tr>
+    <tr><td>Disable <code>spark.databricks.delta.retentionDurationCheck.enabled</code></td><td>Short retention allowed. Running queries and streams may fail; time travel lost</td></tr>
+    <tr><td>Never VACUUM</td><td>Storage cost grows after every OPTIMIZE, MERGE, UPDATE and DELETE</td></tr>
+    <tr><td>VACUUM right after OPTIMIZE</td><td>Deletes nothing new: those files are not 7 days old yet</td></tr>
+    <tr><td>Retention 30 days</td><td>Time travel 30 days back, but more storage</td></tr>
+    <tr><td>Time travel past the VACUUM horizon</td><td>Error: data files not found</td></tr>
+    <tr><td>Predictive optimization on</td><td>Databricks runs VACUUM on UC managed tables for you</td></tr>
+  </table></div>
+  <p class="note trap">VACUUM does not compact anything and does not delete current data. It only deletes files that are no longer in the current version and are older than the retention.</p>
+</section>
+
+<!-- 14 -->
+<section id="combos">
+  <div class="sec-num">14</div>
+  <h2>Combinations and order: OPTIMIZE + VACUUM and friends</h2>
+  <p>These commands are often run together. Some pairs work well, some are not allowed, and for some the order matters. Build a maintenance sequence and run it.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="cbType" class="cap">Table</label>
+      <select id="cbType">
+        <option value="liq">Liquid: CLUSTER BY (customer_id, txn_date)</option>
+        <option value="part">Partitioned by txn_date</option>
+      </select>
+      <label class="tog"><input type="checkbox" id="cbCheck"> retentionDurationCheck disabled</label>
+    </div>
+    <div class="ctrls" id="cbSteps"></div>
+    <div class="ctrls">
+      <span class="cap">Presets:</span>
+      <button data-p="good">Nightly: OPTIMIZE → wait → VACUUM</button>
+      <button data-p="early">OPTIMIZE → VACUUM same day</button>
+      <button data-p="wrong">VACUUM → OPTIMIZE</button>
+      <button data-p="danger">OPTIMIZE → VACUUM 0 HOURS</button>
+      <button data-p="zliq">ZORDER on a liquid table</button>
+      <button data-p="pz">Partitioned: OPTIMIZE ZORDER → wait → VACUUM</button>
+    </div>
+    <button id="cbRun" class="primary" style="justify-self:start">Run sequence</button>
+    <div class="stats">
+      <div class="stat"><span class="cap">Live files</span><span class="tblcount" id="cbLive">0</span></div>
+      <div class="stat"><span class="cap">Storage used</span><span class="tblcount" id="cbStore">0</span></div>
+      <div class="stat"><span class="cap">Layout</span><span class="tblcount" id="cbLay" style="font-size:.95rem">-</span></div>
+      <div class="stat"><span class="cap">Time travel to v0</span><span class="tblcount" id="cbTT" style="font-size:.95rem">-</span></div>
+    </div>
+    <div><div class="cap">Query skipping quality</div><div class="meter"><i id="cbMeter" style="background:var(--ok)"></i></div></div>
+    <div class="log" id="cbLog" aria-live="polite"><span class="skip">Start: 400 small files, 40 GB, unsorted. Pick steps or a preset.</span></div>
+  </div>
+
+  <h3>Which combinations are allowed?</h3>
+  <div class="tbl"><table>
+    <tr><th>Combination</th><th>Allowed?</th><th>What it gives you</th></tr>
+    <tr><td>OPTIMIZE + VACUUM</td><td><span class="chip ok">Yes</span></td><td>Standard maintenance. OPTIMIZE compacts and clusters; VACUUM removes the old files 7+ days later</td></tr>
+    <tr><td>PARTITIONED BY + ZORDER BY</td><td><span class="chip ok">Yes</span></td><td>The classic pre-liquid layout. ZORDER sorts inside each partition. Can't ZORDER the partition column</td></tr>
+    <tr><td>PARTITIONED BY + CLUSTER BY</td><td><span class="chip bad">No</span></td><td>Error. Recreate as liquid only</td></tr>
+    <tr><td>CLUSTER BY + ZORDER BY</td><td><span class="chip bad">No</span></td><td>Error. Plain OPTIMIZE does the clustering</td></tr>
+    <tr><td>Liquid + predictive optimization</td><td><span class="chip ok">Yes, recommended</span></td><td>OPTIMIZE, VACUUM and ANALYZE run automatically. Needed for CLUSTER BY AUTO</td></tr>
+    <tr><td>Liquid + optimizeWrite / autoCompact</td><td><span class="chip ok">Yes</span></td><td>Fewer small files at write time. OPTIMIZE still does the clustering</td></tr>
+    <tr><td>Partitioning + optimizeWrite</td><td><span class="chip ok">Yes</span></td><td>Fewer small files per partition per write</td></tr>
+    <tr><td>Bloom filter + ZORDER or liquid</td><td><span class="chip ok">Yes</span></td><td>Bloom for an unsorted lookup column, clustering for the main filters (verify in docs)</td></tr>
+    <tr><td>Deletion vectors + OPTIMIZE</td><td><span class="chip ok">Yes</span></td><td>Deletes and updates only mark rows; OPTIMIZE (or <code>REORG TABLE … APPLY (PURGE)</code>) rewrites files without them. Then VACUUM</td></tr>
+    <tr><td>OPTIMIZE FULL on a partitioned table</td><td><span class="chip bad">No effect / not for this</span></td><td>FULL is for reclustering liquid tables (verify in docs)</td></tr>
+    <tr><td>ANALYZE TABLE … COMPUTE DELTA STATISTICS</td><td><span class="chip ok">Yes</span></td><td>Recompute stats after changing stats columns, before relying on skipping</td></tr>
+  </table></div>
+
+  <h3>Does the order matter?</h3>
+  <div class="tbl"><table>
+    <tr><th>Order</th><th>What happens</th><th>Verdict</th></tr>
+    <tr><td>OPTIMIZE → VACUUM (same day)</td><td>VACUUM finds nothing new to delete; the files OPTIMIZE removed are under 7 days old</td><td>Harmless, but storage only drops next week</td></tr>
+    <tr><td>OPTIMIZE → … 7 days … → VACUUM</td><td>Old small files deleted, storage back to normal</td><td><span class="chip ok">Best</span></td></tr>
+    <tr><td>VACUUM → OPTIMIZE</td><td>VACUUM cleans last week's leftovers, then OPTIMIZE creates new leftovers</td><td>Fine for a nightly job: today's leftovers go next week</td></tr>
+    <tr><td>OPTIMIZE → VACUUM RETAIN 0 HOURS</td><td>Storage drops at once, but time travel is gone and running readers can fail</td><td><span class="chip bad">Avoid</span></td></tr>
+    <tr><td>ALTER CLUSTER BY → OPTIMIZE FULL → VACUUM (later)</td><td>Whole table on new keys, old layout files deleted after retention</td><td>The right way to switch keys</td></tr>
+    <tr><td>MERGE / DELETE → OPTIMIZE → VACUUM</td><td>Deletion vectors and small files cleaned, then purged files removed</td><td>Typical Silver nightly job</td></tr>
+  </table></div>
+<pre><code><span class="c-c">-- a typical nightly maintenance task in a Lakeflow Job (when predictive optimization is off)</span>
+<span class="c-k">OPTIMIZE</span> rewards.silver.card_txn;
+<span class="c-k">VACUUM</span>   rewards.silver.card_txn;    <span class="c-c">-- removes files retired 7+ days ago</span>
+<span class="c-k">ANALYZE TABLE</span> rewards.silver.card_txn <span class="c-k">COMPUTE DELTA STATISTICS</span>;  <span class="c-c">-- only if stats columns changed</span></code></pre>
+  <p class="note">With predictive optimization on a UC managed table, you usually schedule none of this yourself.</p>
+</section>
+
+<!-- 15 -->
+<section id="decide">
+  <div class="sec-num">15</div>
+  <h2>Which layout? Decide in two clicks</h2>
+  <div class="stage dec">
+    <div class="ctrls" id="dq1">
+      <span class="cap">What is the situation?</span>
+      <button data-s="new">New table</button><button data-s="old">Existing partitioned table</button><button data-s="slow">Queries are slow</button><button data-s="cost">Storage cost growing</button>
+    </div>
+    <div class="ctrls" id="dq2"></div>
+    <div class="answer" id="dAns" hidden><span class="cap">Use</span><strong id="dPick"></strong><span id="dWhy" class="cap"></span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Requirement</th><th>Pick</th></tr>
+    <tr><td>New table, filters known</td><td>Liquid clustering on 1–4 filter columns</td></tr>
+    <tr><td>New UC managed table, filters unclear</td><td>CLUSTER BY AUTO + predictive optimization</td></tr>
+    <tr><td>Filter on a high-cardinality column (customer_id)</td><td>Liquid clustering, never partitioning</td></tr>
+    <tr><td>Table under 1 TB</td><td>No partitioning. Liquid or nothing</td></tr>
+    <tr><td>Legacy partitioned table, can't rewrite now</td><td>Keep partitions + OPTIMIZE ZORDER on recent partitions</td></tr>
+    <tr><td>Thousands of small files</td><td>OPTIMIZE, plus optimizeWrite / autoCompact</td></tr>
+    <tr><td>Needle lookup on an unsorted column</td><td>Consider a Bloom filter index (rarely needed)</td></tr>
+    <tr><td>Storage growing after OPTIMIZE</td><td>VACUUM, or predictive optimization</td></tr>
+    <tr><td>Changed clustering keys</td><td>OPTIMIZE FULL in a quiet window</td></tr>
+  </table></div>
+</section>
+
+<!-- 16 -->
+<section id="terms">
+  <div class="sec-num">16</div>
+  <h2>Don't confuse these</h2>
+  <div class="terms">
+    <div class="card"><span class="tag" style="color:var(--ok)">CLUSTER BY (table)</span><p class="cap">Liquid clustering keys on a Delta table.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">CLUSTER BY (in a SELECT)</span><p class="cap">Spark SQL query clause = DISTRIBUTE BY + SORT BY. Nothing to do with liquid.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">CLUSTERED BY … BUCKETS</span><p class="cap">Hive bucketing. Not supported on Delta.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">Partition pruning</span><p class="cap">Skipping whole folders by partition value.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Data skipping</span><p class="cap">Skipping files using min/max stats in the Delta log.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">OPTIMIZE</span><p class="cap">Compacts, and clusters unclustered data on liquid tables.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">OPTIMIZE FULL</span><p class="cap">Reclusters every file on a liquid table.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">ZORDER</span><p class="cap">Option on OPTIMIZE; full rewrite each run; not for liquid tables.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">VACUUM</span><p class="cap">Deletes old unreferenced files. Doesn't compact.</p></div>
+    <div class="card"><span class="tag" style="color:var(--muted)">Bloom filter index</span><p class="cap">Optional index files. Clustering is not an index.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Predictive optimization</span><p class="cap">Runs maintenance for you. Different from predictive I/O, which speeds up reads.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">optimizeWrite vs autoCompact</span><p class="cap">Before the write (shuffle) vs after the write (merge small files).</p></div>
+  </div>
+  <p class="note">Parked for later: deletion vectors and REORG in depth, predictive I/O, reading the query profile to spot skipping problems, and Iceberg table layouts (exam section 9).</p>
+</section>
+
+<footer>Study notes for Asim's Databricks Data Engineer Professional prep. Details come from study discussion; anything marked "verify in docs", and all runtime versions and thresholds, should be confirmed against the official Databricks documentation before the exam.</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    document.querySelectorAll('animateMotion, animate').forEach(function(a){ a.parentNode && a.parentNode.removeChild(a); });
+    document.querySelectorAll('.moving').forEach(function(m){ m.style.display='none'; });
+  }
+
+  function $(id){return document.getElementById(id);}
+  function el(t,c,h){var e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;}
+  function log(box,cls,msg){var s=el('span',cls,msg); box.appendChild(s); box.scrollTop=box.scrollHeight;}
+  function bump(n){n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');}
+  function gb(x){return x>=1000?(x/1000).toFixed(1)+' TB':(x>=1?Math.round(x*10)/10+' GB':Math.round(x*1000)+' MB');}
+
+  /* 02 partitioning */
+  var P={
+    none:{f:1,date:'reads all',cust:'reads all',risk:0,msg:'One table, no folders. Fine, but nothing is pruned. This is where liquid clustering shines.'},
+    month:{f:36,date:'1 of 36 folders',cust:'reads all',risk:8,msg:'About 5.6 GB per month folder. A reasonable partition size, and only date filters benefit.',cls:'note'},
+    date:{f:1095,date:'31 of 1,095',cust:'reads all',risk:35,msg:'About 180 MB per day. Below the 1 GB guideline, so many small files. Customer lookups still read everything.'},
+    mcc:{f:20,date:'reads all',cust:'reads all',risk:5,msg:'Only helps queries that filter on merchant category, and some categories (Groceries) are much bigger than others: skew.'},
+    cust:{f:2000000,date:'reads all',cust:'1 of 2,000,000',risk:100,msg:'Two million folders of about 100 KB each. Listing alone takes ages and every write makes tiny files. Never do this. Use liquid clustering.',trap:1}
+  };
+  function pDraw(){
+    var p=P[$('pCol').value];
+    $('pFold').textContent=p.f.toLocaleString(); $('pSize').textContent=gb(200/p.f);
+    $('pDate').textContent=p.date; $('pCust').textContent=p.cust;
+    $('pMeter').style.width=p.risk+'%'; $('pMsg').textContent=p.msg; $('pMsg').className=p.trap?'note trap':'note';
+  }
+  $('pCol').onchange=pDraw; pDraw();
+
+  /* 03 small files */
+  var sf={small:[],big:0,dead:0}, SL=$('sfLog');
+  for(var i=0;i<40;i++) sf.small.push(0.05);
+  function sfDraw(){
+    var n=sf.small.length+sf.big, size=sf.small.reduce(function(a,b){return a+b},0)+sf.big*1;
+    $('sfFiles').textContent=n.toLocaleString(); $('sfAvg').textContent=n?gb(size/n):'-'; $('sfDead').textContent=sf.dead.toLocaleString();
+    $('sfMeter').style.width=Math.min(100,8+sf.small.length/4)+'%';
+  }
+  $('sfWrite').onclick=function(){
+    var ow=$('sfOW').checked, ac=$('sfAC').checked, k=ow?4:40, s=2/k;
+    for(var i=0;i<k;i++) sf.small.push(s);
+    log(SL,'skip','+ micro-batch wrote '+k+' file(s) of '+gb(s)+(ow?' (optimizeWrite shuffled first)':''));
+    if(ac && sf.small.length>=8){ var tot=sf.small.reduce(function(a,b){return a+b},0), m=Math.max(1,Math.round(tot/0.128)); sf.dead+=sf.small.length; log(SL,'ok','  autoCompact merged '+sf.small.length+' small files into '+m+' of ~128 MB'); sf.small=[]; for(var j=0;j<m;j++) sf.small.push(tot/m); }
+    sfDraw();
+  };
+  $('sfOpt').onclick=function(){
+    var smalls=sf.small.filter(function(x){return x<0.9}), tot=smalls.reduce(function(a,b){return a+b},0);
+    log(SL,'skip','> OPTIMIZE rewards.bronze.card_txn');
+    if(smalls.length<2){log(SL,'skip','  nothing to compact: files are already large'); sfDraw(); return;}
+    var m=Math.max(1,Math.round(tot)); sf.dead+=smalls.length; sf.small=sf.small.filter(function(x){return x>=0.9}); sf.big+=m;
+    log(SL,'ok','  numFilesRemoved '+smalls.length+', numFilesAdded '+m+' (~1 GB each)');
+    log(SL,'bad','  '+smalls.length+' old files still in storage until VACUUM');
+    sfDraw(); bump($('sfFiles'));
+  };
+  sfDraw();
+
+  /* 04 data skipping */
+  var CUST=1029384, OCT=10;
+  function layoutFiles(l){
+    var f=[],i;
+    if(l==='none'){for(i=0;i<12;i++) f.push({c:[1000000,1999999],m:[1,12]});}
+    else if(l==='part'){for(i=0;i<12;i++) f.push({c:[1000000,1999999],m:[i+1,i+1],p:1});}
+    else if(l==='z'){for(i=0;i<12;i++){var lo=1000000+Math.round(i*1000000/12); f.push({c:[lo,999999+Math.round((i+1)*1000000/12)],m:[1,12]});}}
+    else {for(var c=0;c<4;c++) for(var d=0;d<3;d++) f.push({c:[1000000+c*250000,1249999+c*250000],m:[d*4+1,d*4+4]});}
+    return f;
+  }
+  function k(n){return (n/1e6).toFixed(2)+'M';}
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function skDraw(){
+    var l=$('skLayout').value, q=$('skQ').value, f=layoutFiles(l), T=$('skTiles'), read=0; T.innerHTML='';
+    f.forEach(function(x,i){
+      var hit=true;
+      if(q==='cust'||q==='both') hit=hit&&CUST>=x.c[0]&&CUST<=x.c[1];
+      if(q==='date'||q==='both') hit=hit&&OCT>=x.m[0]&&OCT<=x.m[1];
+      if(hit) read++;
+      T.appendChild(el('div','tile '+(hit?'read':'skip'),'<b>file '+String(i+1).padStart(2,'0')+'</b><span class="v">cust '+k(x.c[0])+'–'+k(x.c[1])+'</span><span class="v">'+MON[x.m[0]-1]+(x.m[0]!==x.m[1]?'–'+MON[x.m[1]-1]:'')+'</span><span class="v">mcc A–Z</span>'));
+    });
+    $('skRead').textContent=read+' / 12'; $('skGB').textContent=gb(read*16);
+    var m;
+    if(q==='mcc') m='merchant_cat is not a layout column in any option, so every file holds A–Z. Nothing is skipped.';
+    else if(l==='none') m='Rows are in arrival order, so every file spans every customer and every month. Stats exist but skip nothing.';
+    else if(l==='part') m=(q==='cust')?'Partitions only help date filters. A customer lookup opens every folder.':'Partition pruning: only the October folder is read. No stats needed.';
+    else if(l==='z') m=(q==='date')?'ZORDER on customer_id alone does not help a date filter.':'Narrow customer ranges per file, so the lookup reads one file.';
+    else m=(q==='both')?'Both filters narrow it down to a single file.':'Clustering on two columns helps either filter alone, and both together most.';
+    $('skMsg').textContent=m; bump($('skRead'));
+  }
+  $('skLayout').onchange=skDraw; $('skQ').onchange=skDraw; skDraw();
+
+  /* 08 OPTIMIZE simulator */
+  var op, OL=$('opLog'), KEYS=['(customer_id, txn_date)','(merchant_cat, txn_date)'];
+  function opInit(){op={files:[],key:0,day:1,lastRW:0}; for(var i=0;i<8;i++) op.files.push({s:'cl',k:0,lab:'cust '+k(1000000+i*125000)+'–'+k(1124999+i*125000)});}
+  function opDraw(){
+    var T=$('opTiles'); T.innerHTML='';
+    op.files.forEach(function(f,i){
+      var cls=f.s==='raw'?'raw':(f.k===op.key?'cl':'old');
+      T.appendChild(el('div','tile '+cls,'<b>file '+(i+1)+'</b><span class="v">'+f.lab+'</span>'));
+    });
+    var cur=op.files.filter(function(f){return f.s==='cl'&&f.k===op.key}).length;
+    $('opKeys').textContent=KEYS[op.key]; $('opPct').textContent=Math.round(cur*100/op.files.length)+'%'; $('opRW').textContent=op.lastRW;
+  }
+  function opOptimize(full){
+    var target=op.files.filter(function(f){return full?true:f.s==='raw'});
+    log(OL,'skip','> OPTIMIZE rewards.silver.card_txn'+(full?' FULL':''));
+    if(!target.length){op.lastRW=0; log(OL,'skip','  nothing unclustered, no files rewritten'); opDraw(); return;}
+    var n=target.length, keep=op.files.filter(function(f){return target.indexOf(f)<0});
+    var made=[]; for(var i=0;i<n;i++){ made.push({s:'cl',k:op.key,lab:op.key?('mcc group '+(i+1)+' · days'):('cust '+k(1000000+i*1000000/n)+'–'+k(999999+(i+1)*1000000/n))}); }
+    op.files=keep.concat(made); op.lastRW=n;
+    log(OL,'ok','  rewrote '+n+' file(s) on '+KEYS[op.key]+(full?' (every file)':' (new data only)'));
+    if(!full && keep.some(function(f){return f.k!==op.key})) log(OL,'skip','  files on old keys left alone. OPTIMIZE FULL to recluster them');
+    opDraw(); bump($('opPct'));
+  }
+  $('opIns').onclick=function(){
+    op.day++; op.files.push({s:'raw',k:-1,lab:'day '+op.day+' · mixed'},{s:'raw',k:-1,lab:'day '+op.day+' · mixed'});
+    log(OL,'skip','+ INSERT INTO … day '+op.day+': 2 unclustered files');
+    opDraw();
+    if($('opPO').checked){log(OL,'ok','  predictive optimization decided OPTIMIZE is worth it'); opOptimize(false);}
+  };
+  $('opRun').onclick=function(){opOptimize(false)};
+  $('opFull').onclick=function(){opOptimize(true)};
+  $('opAlter').onclick=function(){
+    if(op.key===1){log(OL,'skip','  keys are already (merchant_cat, txn_date)'); return;}
+    op.key=1; op.lastRW=0; log(OL,'bad','> ALTER TABLE … CLUSTER BY (merchant_cat, txn_date): metadata only, 0 files rewritten'); opDraw();
+  };
+  $('opReset').onclick=function(){opInit(); OL.innerHTML=''; log(OL,'skip','Reset: 8 files clustered on (customer_id, txn_date).'); opDraw();};
+  opInit(); opDraw();
+
+  /* 10 change keys */
+  var K={
+    alter:{r:[['clusteringColumns','["merchant_cat","txn_date"]'],['Existing files','Unchanged, still clustered on old keys'],['New writes + OPTIMIZE','Use the new keys'],['Files rewritten now','0']],m:'Metadata change only. Run OPTIMIZE FULL later if old data must follow the new keys.'},
+    auto:{r:[['clusteringColumns','chosen by Databricks'],['Existing files','Unchanged until it decides to recluster'],['New writes + OPTIMIZE','Use keys picked from query history'],['Files rewritten now','0']],m:'Requires a UC managed table with predictive optimization enabled.'},
+    none:{r:[['clusteringColumns','[]'],['Existing files','Keep their current layout'],['New writes + OPTIMIZE','Not clustered, only compacted'],['Files rewritten now','0']],m:'Turns clustering off. It does not unsort existing files.',t:1},
+    five:{r:[['Result','Error'],['Reason','At most 4 clustering columns']],m:'Pick the 1–4 columns you filter on most.',t:1},
+    part:{r:[['Result','Error'],['Reason','Liquid clustering cannot be combined with partitioning'],['Fix','CREATE OR REPLACE TABLE … CLUSTER BY (…) AS SELECT * FROM old_table']],m:'Partitioned tables must be recreated to become liquid.',t:1}
+  };
+  function kDraw(){var x=K[$('kCmd').value]; $('kOut').innerHTML='<tr><th>Item</th><th>After the command</th></tr>'+x.r.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join(''); $('kMsg').textContent=x.m; $('kMsg').className=x.t?'note trap':'note';}
+  $('kCmd').onchange=kDraw; kDraw();
+
+  /* 14 combinations */
+  var OPS=[['','—'],['opt','OPTIMIZE'],['z','OPTIMIZE ZORDER BY (customer_id)'],['full','OPTIMIZE FULL'],['vac','VACUUM (7 days)'],['vac0','VACUUM RETAIN 0 HOURS'],['wait','wait 8 days'],['an','ANALYZE … COMPUTE DELTA STATISTICS'],['merge','MERGE daily updates']];
+  var S=$('cbSteps'), CL=$('cbLog');
+  for(var s=0;s<4;s++){var sel=el('select'); sel.setAttribute('aria-label','Step '+(s+1)); OPS.forEach(function(o){var op_=el('option',null,o[1]); op_.value=o[0]; sel.appendChild(op_);}); S.appendChild(el('span','cap','Step '+(s+1))); S.appendChild(sel);}
+  var sels=S.querySelectorAll('select');
+  var PRE={good:['opt','wait','vac',''],early:['opt','vac','',''],wrong:['vac','opt','',''],danger:['opt','vac0','',''],zliq:['z','','',''],pz:['z','wait','vac','']};
+  document.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){var p=PRE[b.dataset.p]; $('cbType').value=(b.dataset.p==='pz')?'part':'liq'; if(b.dataset.p==='zliq') $('cbType').value='liq'; p.forEach(function(v,i){sels[i].value=v}); run();};});
+  function cbDraw(st){
+    $('cbLive').textContent=st.live.toLocaleString(); $('cbStore').textContent=gb(st.liveGB+st.deadNew+st.deadOld);
+    $('cbLay').textContent=st.layout; $('cbTT').textContent=st.tt?'available':'gone';
+    $('cbTT').style.color=st.tt?'var(--ok)':'var(--warn)';
+    $('cbMeter').style.width=({'unsorted':10,'compacted':25,'clustered':95,'ZORDERed':80})[st.layout]+'%';
+  }
+  function run(){
+    var liq=$('cbType').value==='liq', chk=!$('cbCheck').checked;
+    var st={live:400,liveGB:40,deadNew:0,deadOld:0,layout:'unsorted',tt:true};
+    CL.innerHTML=''; log(CL,'skip','Start: '+(liq?'liquid':'partitioned')+' table, 400 small files, 40 GB, unsorted.');
+    function retire(gbv){st.deadNew+=gbv;}
+    [].forEach.call(sels,function(sel,i){
+      var v=sel.value; if(!v) return;
+      var name=OPS.filter(function(o){return o[0]===v})[0][1];
+      log(CL,'skip','> step '+(i+1)+': '+name);
+      if(v==='opt'){
+        if(st.fresh&&st.layout!=='unsorted'){retire(st.freshGB); st.live=st.live-st.fresh+2; log(CL,'ok','  only the '+st.fresh+' new files rewritten into 2'+(liq?', clustered (incremental)':'')+'; the rest untouched'); st.fresh=0; st.freshGB=0; return;}
+        if(st.live<=40&&st.layout!=='unsorted'){log(CL,'skip','  already compacted and laid out, nothing to do'); return;}
+        st.fresh=0; st.freshGB=0; retire(st.liveGB); st.live=40; st.layout=liq?'clustered':(st.layout==='ZORDERed'?'ZORDERed':'compacted');
+        log(CL,'ok','  compacted to 40 files of ~1 GB'+(liq?', clustered on (customer_id, txn_date)':'; rows not sorted'));
+        log(CL,'skip','  400 old files retired but kept for time travel');
+      } else if(v==='z'){
+        if(liq){log(CL,'bad','  ERROR: ZORDER is not supported on a liquid clustered table. Use plain OPTIMIZE'); return;}
+        retire(st.liveGB); st.live=40; st.layout='ZORDERed'; st.fresh=0; st.freshGB=0;
+        log(CL,'ok','  every file in scope rewritten and sorted on customer_id inside each partition');
+      } else if(v==='full'){
+        if(!liq){log(CL,'bad','  FULL is for reclustering liquid tables. Use OPTIMIZE or ZORDER here (verify in docs)'); return;}
+        retire(st.liveGB); st.live=40; st.layout='clustered'; st.fresh=0; st.freshGB=0;
+        log(CL,'ok','  every file reclustered, '+gb(st.liveGB)+' rewritten');
+      } else if(v==='merge'){
+        st.live+=20; st.liveGB+=2; st.fresh=(st.fresh||0)+20; st.freshGB=(st.freshGB||0)+2; retire(1);
+        log(CL,'skip','  20 new files written, 1 GB of old files retired; new rows not yet clustered');
+      } else if(v==='wait'){
+        st.deadOld+=st.deadNew; st.deadNew=0; log(CL,'skip','  8 days pass: retired files are now older than 7 days');
+      } else if(v==='vac'){
+        if(st.deadOld>0){log(CL,'ok','  deleted '+gb(st.deadOld)+' of retired files'); st.deadOld=0; st.tt=false; log(CL,'skip','  time travel to versions before the retired files is gone');}
+        else log(CL,'skip','  nothing old enough to delete'+(st.deadNew?' ('+gb(st.deadNew)+' retired less than 7 days ago is kept)':''));
+      } else if(v==='vac0'){
+        if(chk){log(CL,'bad','  ERROR: retention under 168 hours blocked by retentionDurationCheck'); return;}
+        var d=st.deadOld+st.deadNew; st.deadOld=0; st.deadNew=0; if(d){st.tt=false;}
+        log(CL,'bad','  deleted '+gb(d)+' immediately. Time travel gone; running readers and streams may fail');
+      } else if(v==='an'){
+        log(CL,'ok','  stats recomputed for all files. Useful after changing dataSkippingStatsColumns');
+      }
+    });
+    log(CL,'skip','Result: '+st.live+' live files, '+gb(st.liveGB+st.deadNew+st.deadOld)+' in storage.');
+    cbDraw(st); bump($('cbStore'));
+  }
+  $('cbRun').onclick=run; $('cbType').onchange=run;
+  PRE.good.forEach(function(v,i){sels[i].value=v}); run();
+
+  /* 15 decision */
+  var Q={
+    new:{q:'Do you know the main filter columns?',o:[['Yes, 1–4 columns','Liquid clustering: CLUSTER BY (cols)','Flexible keys, incremental OPTIMIZE, no small-file risk.'],['Not sure yet (UC managed table)','CLUSTER BY AUTO + predictive optimization','Databricks picks keys from real queries and maintains the table.'],['Small table, no filters','No layout needed','Under a few GB, one or two files are read anyway.']]},
+    old:{q:'Can you rewrite the table?',o:[['Yes','CTAS / REPLACE TABLE … CLUSTER BY','ALTER does not work on partitioned tables, so recreate it.'],['Not now','Keep partitions + OPTIMIZE ZORDER on recent partitions','Limit ZORDER with WHERE to keep the rewrite small.']]},
+    slow:{q:'What does the query profile show?',o:[['Thousands of tiny files','OPTIMIZE + optimizeWrite / autoCompact','Fewer, bigger files cut the per-file overhead.'],['Most files read, few pruned','Cluster on the filter columns, then OPTIMIZE','Narrow min/max ranges let data skipping work.'],['Filter column has no stats','Fix stats columns + ANALYZE TABLE','Columns beyond the first 32 have no min/max by default.']]},
+    cost:{q:'What is growing?',o:[['Storage after OPTIMIZE or MERGE','VACUUM (or predictive optimization)','Old files are kept until they pass the 7-day retention.'],['Compute for nightly ZORDER','Move to liquid clustering','Liquid only rewrites unclustered data.']]}
+  };
+  var q2=$('dq2'), ans=$('dAns');
+  document.querySelectorAll('#dq1 button').forEach(function(b){b.onclick=function(){
+    document.querySelectorAll('#dq1 button').forEach(function(x){x.classList.remove('primary')}); b.classList.add('primary');
+    var s=Q[b.dataset.s]; q2.innerHTML='<span class="cap">'+s.q+'</span>'; ans.hidden=true;
+    s.o.forEach(function(o){var bb=el('button',null,o[0]); bb.onclick=function(){q2.querySelectorAll('button').forEach(function(x){x.classList.remove('primary')}); bb.classList.add('primary'); $('dPick').textContent=o[1]; $('dWhy').textContent=o[2]; ans.hidden=false;}; q2.appendChild(bb);});
+  };});
+  document.querySelector('#dq1 button').click();
+  q2.querySelector('button').click();
+
+  /* nav highlight */
+  var links=[].slice.call(document.querySelectorAll('#rail a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)}); var on=links.filter(function(a){return a.classList.contains('on')})[0]; if(on&&on.scrollIntoView){var r=$('rail'); r.scrollLeft=on.offsetLeft-r.clientWidth/2+on.clientWidth/2;}}});},{rootMargin:'-40% 0px -55% 0px'});
+    document.querySelectorAll('section[id]').forEach(function(s){io.observe(s)});
+  }
+})();
+</script>
+
+</body>
+</html>
