@@ -1,0 +1,1199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Delta Log Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single study column with a sticky section rail; each section = idea, live animation, then the "what if" table. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#16202A; --muted:#566370; --line:#D3DAE1;
+  --accent:#1F5FBF; --accent-soft:#E3ECFA;
+  --bronze:#A8622B; --silver:#73838F; --gold:#B38A12;
+  --ok:#23845A; --warn:#B8382B; --code-bg:#EAEEF2;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#172029; --ink:#E5EBF0; --muted:#97A5B2; --line:#2B3846;
+  --accent:#78A8F2; --accent-soft:#1C2C44;
+  --bronze:#D3925C; --silver:#A9B7C3; --gold:#E2BE4C;
+  --ok:#5CC28C; --warn:#EE7465; --code-bg:#121A22; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:700;margin-top:6px}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+:not(pre)>code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0;font-size:.85rem;line-height:1.55}
+pre code{font-size:inherit}
+.c-k{color:var(--accent)} .c-s{color:var(--ok)} .c-c{color:var(--muted)}
+a{color:var(--accent)}
+
+/* nav */
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:4px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+nav.rail a{flex:none;text-decoration:none;color:var(--muted);font-size:.82rem;font-weight:500;padding:5px 10px;border-radius:999px;white-space:nowrap}
+nav.rail a:hover,nav.rail a:focus-visible{color:var(--ink);background:var(--accent-soft);outline:none}
+nav.rail a.on{color:var(--accent);background:var(--accent-soft)}
+
+/* hero */
+header.hero{padding-block:40px 24px;display:grid;gap:16px}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.1rem;color:var(--muted)}
+.medal{display:flex;flex-wrap:wrap;gap:8px}
+.medal span{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+
+section{padding-block:44px;border-top:1px solid var(--line);display:grid;gap:18px}
+section > *{min-width:0}
+.sec-num{font-family:var(--f-mono);font-size:.78rem;color:var(--accent);letter-spacing:.08em}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:14px}
+.stage svg{width:100%;height:auto;display:block}
+.cap{font-size:.86rem;color:var(--muted)}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 12px;color:var(--ink);font-size:.95rem}
+.trap{border-left-color:var(--warn)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px;align-content:start}
+.card h3{margin:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--code-bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.whatif th:first-child{width:42%}
+
+/* controls */
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font-family:var(--f-body);font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.tog{display:inline-flex;gap:6px;align-items:center;font-size:.86rem;cursor:pointer}
+.log{font-family:var(--f-mono);font-size:.78rem;background:var(--code-bg);border-radius:8px;padding:10px 12px;min-height:84px;max-height:170px;overflow:auto;display:grid;gap:2px;align-content:start}
+.log .ok{color:var(--ok)} .log .skip{color:var(--muted)} .log .bad{color:var(--warn)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--ok);border-color:var(--ok)} .chip.bad{color:var(--warn);border-color:var(--warn)} .chip.acc{color:var(--accent);border-color:var(--accent)}
+
+/* auto loader sim */
+.al{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.al > div{min-width:0}
+.pane{border:1px dashed var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;align-content:start;min-height:150px}
+.pane h4{margin:0;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.file{font-family:var(--f-mono);font-size:.78rem;padding:5px 8px;border-radius:6px;background:var(--code-bg);display:flex;justify-content:space-between;gap:8px;animation:pop .35s ease-out}
+.file.done{opacity:.55}
+.file .v{color:var(--muted)}
+.arrow{display:grid;place-items:center;font-family:var(--f-mono);color:var(--accent);font-size:.75rem;text-align:center}
+.tblcount{font-family:var(--f-display);font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+@keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none}}
+.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+@media (max-width:620px){.al{grid-template-columns:1fr}.arrow{transform:rotate(90deg);min-height:30px}}
+
+/* pattern lanes */
+.lanes{display:grid;gap:12px}
+.lane{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center}
+.lane b{font-size:.85rem}
+.track{position:relative;height:28px;background:var(--code-bg);border-radius:6px;overflow:hidden}
+.blk{position:absolute;top:5px;height:18px;border-radius:4px;background:var(--accent)}
+.full .blk{width:30%;animation:fullrun 6s linear infinite;background:var(--bronze)}
+.full .blk:nth-child(2){animation-delay:-3s}
+@keyframes fullrun{0%{left:-30%}100%{left:100%}}
+.inc .blk{width:7%;animation:fullrun 6s linear infinite}
+.inc .blk:nth-child(2){animation-delay:-2s}.inc .blk:nth-child(3){animation-delay:-4s}
+.str .blk{width:3%;animation:fullrun 3s linear infinite;background:var(--ok)}
+.str .blk:nth-child(2){animation-delay:-.5s}.str .blk:nth-child(3){animation-delay:-1s}.str .blk:nth-child(4){animation-delay:-1.5s}.str .blk:nth-child(5){animation-delay:-2s}.str .blk:nth-child(6){animation-delay:-2.5s}
+@media (max-width:520px){.lane{grid-template-columns:1fr}}
+
+/* tree */
+.tree{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tree ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* jobs dag */
+.dag{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.task{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;background:var(--surface);animation:lit 8s infinite}
+.task:nth-of-type(2){animation-delay:2s}.task:nth-of-type(3){animation-delay:4s}.task:nth-of-type(4){animation-delay:6s}
+@keyframes lit{0%,20%{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}25%,100%{border-color:var(--line);box-shadow:none}}
+.dag .to{color:var(--muted);font-family:var(--f-mono)}
+
+/* slider */
+.bars{display:grid;gap:3px}
+.bar{height:8px;border-radius:3px;background:var(--accent);transform-origin:left;animation:grow 1.2s ease-out}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+input[type=range]{width:min(320px,100%)}
+.meter{height:10px;border-radius:5px;background:var(--code-bg);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--warn);transition:width .4s}
+
+/* decision */
+.dec{display:grid;gap:12px}
+.answer{border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:14px;display:grid;gap:4px}
+.answer strong{font-family:var(--f-display);font-size:1.25rem}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+footer{padding-block:30px 50px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .full .blk:nth-child(1){left:10%}.full .blk:nth-child(2){left:55%}
+  .inc .blk:nth-child(1){left:15%}.inc .blk:nth-child(2){left:45%}.inc .blk:nth-child(3){left:75%}
+  .str .blk:nth-child(n){left:calc(var(--i,0)*16%)}
+}
+
+/* ---- Delta log page additions (same tokens) ---- */
+.jpre{max-height:260px;overflow:auto;font-size:.78rem}
+.files{display:flex;flex-wrap:wrap;gap:6px}
+.pq{font-family:var(--f-mono);font-size:.74rem;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--code-bg);animation:pop .35s ease-out}
+.pq.live{border-color:var(--ok);color:var(--ok)}
+.pq.gone{opacity:.5;text-decoration:line-through}
+.pq.dv{border-color:var(--gold);color:var(--gold)}
+.pq.new{border-color:var(--accent);color:var(--accent)}
+.pq.dead{border-color:var(--warn);color:var(--warn);text-decoration:line-through}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.stepper{display:flex;flex-wrap:wrap;gap:6px}
+.stepper button.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.mini{width:100%;min-width:0;font-size:.82rem}
+.mini th,.mini td{padding:6px 9px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.86rem;align-items:baseline}
+.kv b{font-family:var(--f-mono);font-size:.76rem;color:var(--muted);font-weight:600}
+.big{font-family:var(--f-display);font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+.err{color:var(--warn)} .okc{color:var(--ok)}
+.once .blk{width:22%;background:var(--gold);animation:oncerun 6s linear infinite}
+@keyframes oncerun{0%{left:-22%}35%{left:100%}100%{left:100%}}
+.gap .blk{width:5%;animation:fullrun 6s steps(3,end) infinite}
+.gap .blk:nth-child(2){animation-delay:-2s}.gap .blk:nth-child(3){animation-delay:-4s}
+.phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.phase .task{animation-duration:10s}
+.phase .task:nth-of-type(5){animation-delay:8s}
+@media (prefers-reduced-motion: reduce){
+  .once .blk{left:10%}
+  .gap .blk:nth-child(1){left:10%}.gap .blk:nth-child(2){left:45%}.gap .blk:nth-child(3){left:80%}
+}
+</style>
+</head>
+<body>
+
+
+<nav class="rail" id="rail" aria-label="Sections">
+  <a href="../">← All notes</a>
+  <a href="#what">What is the log</a><a href="#actions">Six actions</a><a href="#walk">Six commits</a><a href="#replay">Replay &amp; checkpoints</a>
+  <a href="#remove">Remove File</a><a href="#optimize">OPTIMIZE</a><a href="#txn">Set Transaction</a><a href="#streaming">Structured Streaming</a>
+  <a href="#atomic">Atomicity</a><a href="#concurrency">Concurrency</a><a href="#storage">Storage</a><a href="#acid">ACID</a>
+  <a href="#timetravel">Time travel</a><a href="#retention">Retention</a><a href="#merge">MERGE</a><a href="#dv">Deletion vectors</a>
+  <a href="#protocol">Protocol</a><a href="#decide">Decide</a><a href="#terms">Don't confuse</a>
+</nav>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Databricks Data Engineer Professional · Delta Lake internals · used across several exam sections</div>
+  <h1>Delta Log Field Guide</h1>
+  <p class="lede">How a Delta table really works underneath: the <code>_delta_log</code> folder, the six actions inside each commit, and how they give you atomic writes, safe concurrent jobs, time travel, MERGE, OPTIMIZE and exactly-once streaming. Every section has a live demo, real JSON and a "what if I change this" table.</p>
+  <div class="medal"><span style="color:var(--bronze)">Bronze · raw stream lands</span><span style="color:var(--silver)">Silver · MERGE upserts</span><span style="color:var(--gold)">Gold · time-travel audits</span></div>
+</header>
+
+<!-- 00 -->
+<section id="what">
+  <div class="sec-num">00</div>
+  <h2>What is the Delta log?</h2>
+  <p>A Delta table is two things in one folder: ordinary <b>Parquet data files</b>, and a sub-folder called <code>_delta_log</code>. The Parquet files hold the rows. The log is a numbered diary that says which Parquet files belong to the table right now.</p>
+  <p>Think of the rewards platform. Card swipes stream into <code>rewards.bronze.transactions</code>. A nightly vendor file is merged into <code>rewards.silver.customers</code>. Auditors ask what a customer's FICO band was at month-end. Every one of those tables has its own <code>_delta_log</code>, and every write to it adds one new JSON file there.</p>
+  <p>The rule that makes everything work: <b>a Parquet file is part of the table only if the log says so.</b> Writers write files first, then add one commit. Readers read the log first, then only the files it lists.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 320" role="img" aria-label="A writer writes Parquet files, then commits a JSON entry to the delta log. A reader replays the log, then reads only the live files.">
+      <defs>
+        <path id="ow1" d="M160 135 C 210 135, 215 80, 260 80"/>
+        <path id="ow2" d="M160 175 C 210 175, 215 240, 260 240"/>
+        <path id="or1" d="M500 240 C 550 240, 555 175, 600 175"/>
+        <path id="or2" d="M600 135 C 555 135, 550 80, 500 80"/>
+      </defs>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--ink)">
+        <g fill="none" stroke="var(--line)" stroke-width="2"><use href="#ow1"/><use href="#ow2"/><use href="#or1"/><use href="#or2"/></g>
+        <rect x="10" y="115" width="150" height="80" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="85" y="148" text-anchor="middle" font-weight="700">Writer</text>
+        <text x="85" y="168" text-anchor="middle" font-size="11" fill="var(--muted)">INSERT · UPDATE · MERGE</text>
+        <rect x="260" y="20" width="240" height="115" rx="8" fill="var(--code-bg)" stroke="var(--line)" stroke-dasharray="5 4"/>
+        <text x="272" y="40" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">silver/customers/  (Parquet)</text>
+        <g font-size="10" font-family="JetBrains Mono, monospace" text-anchor="middle">
+          <rect x="274" y="58" width="48" height="56" rx="4" fill="var(--surface)" stroke="var(--line)" opacity=".5"/><text x="298" y="90" fill="var(--muted)" text-decoration="line-through">p-000</text>
+          <rect x="330" y="58" width="48" height="56" rx="4" fill="var(--surface)" stroke="var(--ok)"/><text x="354" y="90" fill="var(--ok)">p-001</text>
+          <rect x="386" y="58" width="48" height="56" rx="4" fill="var(--surface)" stroke="var(--ok)"/><text x="410" y="90" fill="var(--ok)">p-002</text>
+          <rect x="442" y="58" width="48" height="56" rx="4" fill="var(--surface)" stroke="var(--ok)"/><text x="466" y="90" fill="var(--ok)">p-003</text>
+        </g>
+        <rect x="260" y="170" width="240" height="135" rx="8" fill="var(--code-bg)" stroke="var(--line)" stroke-dasharray="5 4"/>
+        <text x="272" y="190" font-size="11" fill="var(--muted)" font-family="JetBrains Mono, monospace">_delta_log/</text>
+        <g font-size="11" font-family="JetBrains Mono, monospace">
+          <rect x="274" y="200" width="120" height="20" rx="3" fill="var(--surface)" stroke="var(--line)"/><text x="282" y="214">00000.json</text>
+          <rect x="274" y="224" width="120" height="20" rx="3" fill="var(--surface)" stroke="var(--line)"/><text x="282" y="238">00001.json</text>
+          <rect x="274" y="248" width="120" height="20" rx="3" fill="var(--surface)" stroke="var(--line)"/><text x="282" y="262">00002.json</text>
+          <rect x="274" y="272" width="120" height="20" rx="3" fill="var(--surface)" stroke="var(--accent)"/><text x="282" y="286" fill="var(--accent)">00003.json</text>
+          <rect x="404" y="200" width="88" height="44" rx="3" fill="var(--surface)" stroke="var(--gold)"/><text x="448" y="218" text-anchor="middle" fill="var(--gold)">checkpoint</text><text x="448" y="234" text-anchor="middle" fill="var(--muted)" font-size="9">every 10 commits</text>
+        </g>
+        <rect x="600" y="115" width="150" height="80" rx="8" fill="var(--surface)" stroke="var(--ok)" stroke-width="2"/>
+        <text x="675" y="148" text-anchor="middle" font-weight="700">Reader</text>
+        <text x="675" y="168" text-anchor="middle" font-size="11" fill="var(--muted)">SELECT * → version 3</text>
+        <g font-size="11" font-family="JetBrains Mono, monospace" fill="var(--accent)">
+          <text x="170" y="70">1 write Parquet</text><text x="170" y="270">2 commit JSON</text>
+          <text x="520" y="270" fill="var(--ok)">3 replay log</text><text x="520" y="70" fill="var(--ok)">4 read live files</text>
+        </g>
+      </g>
+      <g>
+        <circle r="6" fill="var(--accent)"><animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;.25;1" calcMode="linear"><mpath href="#ow1"/></animateMotion></circle>
+        <circle r="6" fill="var(--accent)"><animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;.25;.5;1" calcMode="linear"><mpath href="#ow2"/></animateMotion></circle>
+        <circle r="6" fill="var(--ok)"><animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;.5;.75;1" calcMode="linear"><mpath href="#or1"/></animateMotion></circle>
+        <circle r="6" fill="var(--ok)"><animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;0;1" keyTimes="0;.75;1" calcMode="linear"><mpath href="#or2"/></animateMotion></circle>
+      </g>
+    </svg>
+    <p class="cap">Steps 1 to 4 run in order. <code>p-000</code> is struck through: it is still on disk, but the log removed it, so the reader skips it. File names are shortened here; real log files are 20 digits, for example <code>00000000000000000003.json</code>.</p>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Why not just Parquet?</h3><p class="cap">A plain Parquet folder has no record of which files are complete. A job that dies halfway leaves a mix of old and new files.</p></div>
+    <div class="card"><h3>What the log gives you</h3><p class="cap">All-or-nothing writes, safe concurrent jobs, time travel, data skipping stats, schema enforcement and exactly-once streams.</p></div>
+    <div class="card"><h3>What it costs</h3><p class="cap">Old files pile up until <code>VACUUM</code>, and every change rewrites whole files unless deletion vectors are on.</p></div>
+  </div>
+</section>
+
+<!-- 01 -->
+<section id="actions">
+  <div class="sec-num">01</div>
+  <h2>The six actions inside a commit</h2>
+  <p>Each commit file is a list of <b>actions</b>, one JSON object per line. Six of them cover almost everything you will meet. They fall into three families.</p>
+  <div class="tree">
+    <div class="card">
+      <span class="tag" style="color:var(--accent)">Table definition</span>
+      <h3>metaData · Update Metadata</h3><p class="cap">Table id, schema, partition columns, table properties. The latest one wins completely.</p>
+      <h3>protocol · Change Protocol</h3><p class="cap">Minimum reader and writer versions and named table features. Old clients are blocked.</p>
+    </div>
+    <div class="card">
+      <span class="tag" style="color:var(--ok)">Which files are live</span>
+      <h3>add · Add File</h3><p class="cap">A Parquet file joins the table, with size and min/max/count stats.</p>
+      <h3>remove · Remove File</h3><p class="cap">A file leaves the table. It stays on disk until VACUUM.</p>
+    </div>
+    <div class="card">
+      <span class="tag" style="color:var(--gold)">Bookkeeping</span>
+      <h3>txn · Set Transaction</h3><p class="cap">"App X has committed its batch N." Makes retries idempotent.</p>
+      <h3>commitInfo · Commit Info</h3><p class="cap">Who, what, when, and row metrics. Feeds <code>DESCRIBE HISTORY</code>.</p>
+    </div>
+  </div>
+<pre><code><span class="c-c">// _delta_log/00000000000000000000.json  (CREATE + first INSERT)</span>
+{<span class="c-s">"protocol"</span>:   {"minReaderVersion":1, "minWriterVersion":2}}
+{<span class="c-s">"metaData"</span>:   {"id":"a1b2c3", "format":{"provider":"parquet"},
+                "schemaString":"{id INT, name STRING, city STRING}",
+                "partitionColumns":[], "configuration":{}, "createdTime":1761469200000}}
+{<span class="c-s">"add"</span>:        {"path":"part-000.parquet", "partitionValues":{}, "size":1024,
+                "modificationTime":1761469200000, "dataChange":true,
+                "stats":"{\"numRecords\":2,\"minValues\":{\"id\":1},\"maxValues\":{\"id\":2},\"nullCount\":{\"id\":0}}"}}
+{<span class="c-s">"commitInfo"</span>: {"timestamp":1761469200000, "operation":"WRITE",
+                "operationParameters":{"mode":"Append"}, "userName":"asim"}}</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>A second <code>metaData</code> in a later commit</td><td>Replaces the old one in full. There is no "partial" metadata</td></tr>
+    <tr><td><code>dataChange: true</code> → <code>false</code></td><td>Tells streaming readers "no new data here", so they skip the commit</td></tr>
+    <tr><td><code>stats</code> missing on an <code>add</code></td><td>The file cannot be skipped by min/max; every query reads it</td></tr>
+    <tr><td><code>minReaderVersion</code> raised</td><td>Clients that do not support it refuse to read the table</td></tr>
+    <tr><td><code>partitionColumns: ["region"]</code></td><td>Every <code>add</code> then carries <code>partitionValues</code>, for example <code>{"region":"US"}</code></td></tr>
+  </table></div>
+  <p class="note">Strictly, <code>commitInfo</code> is optional in the open protocol, but Databricks writes it on every commit. A few other actions exist too, such as <code>cdc</code> (Change Data Feed files) and <code>domainMetadata</code> (used by liquid clustering). Verify in docs if the exam goes deeper.</p>
+</section>
+
+<!-- 02 -->
+<section id="walk">
+  <div class="sec-num">02</div>
+  <h2>Six commits on one table: step through them</h2>
+  <p>Follow <code>rewards.silver.customers</code> through six commits that use all six actions. Click a version to see its JSON, which files are live after it, and what a reader would get.</p>
+  <div class="stage">
+    <div class="stepper" id="wkSteps"></div>
+    <p class="cap" id="wkSql"></p>
+    <div class="grid2">
+      <div style="display:grid;gap:8px;align-content:start"><span class="tag" style="color:var(--muted)">_delta_log/<span id="wkName"></span></span><pre class="jpre"><code id="wkJson"></code></pre><div class="acts" id="wkActs"></div></div>
+      <div style="display:grid;gap:10px;align-content:start">
+        <span class="tag" style="color:var(--muted)">Parquet files after this commit</span><div class="files" id="wkFiles"></div>
+        <span class="tag" style="color:var(--muted)">SELECT * FROM customers</span><div class="tbl"><table class="mini" id="wkRows"></table></div>
+      </div>
+    </div>
+    <div class="note" id="wkWhy"></div>
+  </div>
+<pre><code><span class="c-c">-- The six statements behind versions 0 to 5</span>
+<span class="c-k">CREATE TABLE</span> rewards.silver.customers (id <span class="c-k">INT</span>, name <span class="c-k">STRING</span>, city <span class="c-k">STRING</span>);
+<span class="c-k">INSERT INTO</span> rewards.silver.customers <span class="c-k">VALUES</span> (1,<span class="c-s">'Asha'</span>,<span class="c-s">'Chicago'</span>), (2,<span class="c-s">'Ravi'</span>,<span class="c-s">'Pune'</span>);  <span class="c-c">-- v0</span>
+<span class="c-k">INSERT INTO</span> rewards.silver.customers <span class="c-k">VALUES</span> (3,<span class="c-s">'Meera'</span>,<span class="c-s">'Dallas'</span>);                   <span class="c-c">-- v1</span>
+<span class="c-k">UPDATE</span> rewards.silver.customers <span class="c-k">SET</span> city = <span class="c-s">'Austin'</span> <span class="c-k">WHERE</span> id = 2;              <span class="c-c">-- v2</span>
+<span class="c-k">ALTER TABLE</span> rewards.silver.customers <span class="c-k">ADD COLUMN</span> email <span class="c-k">STRING</span>;               <span class="c-c">-- v3</span>
+<span class="c-c">-- v4: a Structured Streaming job (appId rewards-stream) writes batch 7</span>
+<span class="c-k">ALTER TABLE</span> rewards.silver.customers
+  <span class="c-k">SET TBLPROPERTIES</span> (<span class="c-s">'delta.enableDeletionVectors'</span> = true);           <span class="c-c">-- v5</span>
+
+<span class="c-k">DESCRIBE HISTORY</span> rewards.silver.customers;   <span class="c-c">-- one row per commit, from commitInfo</span></code></pre>
+  <div class="tbl"><table>
+    <tr><th>Statement</th><th>Actions written</th></tr>
+    <tr><td>CREATE + INSERT</td><td><code>protocol</code>, <code>metaData</code>, <code>add</code>, <code>commitInfo</code></td></tr>
+    <tr><td>Append INSERT</td><td><code>add</code>, <code>commitInfo</code></td></tr>
+    <tr><td>UPDATE / DELETE</td><td><code>remove</code>, <code>add</code>, <code>commitInfo</code></td></tr>
+    <tr><td>ADD COLUMN</td><td><code>metaData</code>, <code>commitInfo</code>. No data files rewritten</td></tr>
+    <tr><td>Streaming write</td><td><code>txn</code>, <code>add</code>, <code>commitInfo</code></td></tr>
+    <tr><td>Enable a new feature</td><td><code>protocol</code>, <code>metaData</code>, <code>commitInfo</code></td></tr>
+  </table></div>
+</section>
+
+<!-- 03 -->
+<section id="replay">
+  <div class="sec-num">03</div>
+  <h2>How a reader builds the table: replay and checkpoints</h2>
+  <p>A reader never lists the data folder. It reads the log in order and keeps a running set: every <code>add</code> puts a file in, every <code>remove</code> takes it out. The latest <code>protocol</code> and <code>metaData</code> win. What is left is the <b>snapshot</b> for that version.</p>
+  <p>Replaying thousands of small JSON files would be slow, so Delta regularly writes a <b>checkpoint</b>: one Parquet file holding the full state at that version. A tiny file called <code>_last_checkpoint</code> points to the newest one. A reader loads the checkpoint, then replays only the JSON files after it.</p>
+  <div class="stage">
+    <div class="ctrls"><label for="cpN" class="cap">Commits on the table: <b id="cpNv"></b></label><input type="range" id="cpN" min="1" max="250" value="47"><label class="tog"><input type="checkbox" id="cpOn" checked> checkpoints (every 10)</label></div>
+    <div class="kv"><b>files read</b><span id="cpTxt"></span></div>
+    <div class="meter"><i id="cpMeter"></i></div>
+    <p class="cap">The red bar is how many log files a reader opens to find the current state.</p>
+  </div>
+<pre><code>_delta_log/
+├── 00000000000000000000.json
+├── ...
+├── 00000000000000000040.checkpoint.parquet   <span class="c-c"># full state at v40</span>
+├── 00000000000000000041.json
+├── ...
+├── 00000000000000000046.json                 <span class="c-c"># reader: checkpoint + 41..46</span>
+└── _last_checkpoint                          <span class="c-c"># {"version":40, ...}</span></code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td><code>delta.checkpointInterval = 50</code></td><td>Fewer checkpoints written, more JSON replayed on read. Default is 10 (verify in docs for your runtime)</td></tr>
+    <tr><td>Log files older than <code>delta.logRetentionDuration</code></td><td>Cleaned up automatically after a checkpoint. Time travel before that point stops working</td></tr>
+    <tr><td>Delete a JSON file by hand</td><td>The table is corrupt for that version range. Never touch <code>_delta_log</code></td></tr>
+  </table></div>
+  <p class="note trap">Two different "checkpoints" exist. A <b>Delta log checkpoint</b> is Parquet inside <code>_delta_log</code>. A <b>streaming checkpoint</b> is the folder you pass as <code>checkpointLocation</code>. They have nothing to do with each other.</p>
+</section>
+
+<!-- 04 -->
+<section id="remove">
+  <div class="sec-num">04</div>
+  <h2>Remove File: why UPDATE rewrites whole files</h2>
+  <p>Parquet files are <b>immutable</b>. You cannot change one value inside one. So to move Ravi from Pune to Austin, Delta reads the whole file he lives in, writes a new file with the change, and swaps the two in the log: <code>remove</code> the old, <code>add</code> the new.</p>
+  <p>Asha shares the file with Ravi, so she is copied into the new file too, unchanged. This is called <b>copy-on-write</b>.</p>
+  <div class="stage">
+    <div class="phase">
+      <div class="task"><b>1 · Find</b><br><span class="cap">Stats say id 2 is in part-000</span></div>
+      <div class="task"><b>2 · Read</b><br><span class="cap">Asha + Ravi (Pune)</span></div>
+      <div class="task"><b>3 · Write</b><br><span class="cap">part-002: Asha + Ravi (Austin)</span></div>
+      <div class="task"><b>4 · Commit</b><br><span class="cap">remove part-000, add part-002</span></div>
+      <div class="task"><b>5 · Later</b><br><span class="cap">VACUUM deletes part-000</span></div>
+    </div>
+  </div>
+<pre><code>{<span class="c-s">"remove"</span>: {"path":"part-000.parquet", "deletionTimestamp":1761476400000, "dataChange":true}}
+{<span class="c-s">"add"</span>:    {"path":"part-002.parquet", "dataChange":true, "stats":"{\"numRecords\":2,...}"}}
+{<span class="c-s">"commitInfo"</span>: {"operation":"UPDATE", "operationParameters":{"predicate":"[\"(id = 2)\"]"},
+               "operationMetrics":{"numUpdatedRows":"1","numCopiedRows":"1","numRemovedFiles":"1","numAddedFiles":"1"}}}</code></pre>
+  <div class="tbl"><table>
+    <tr><th>Who writes remove</th><th>dataChange</th><th>Why</th></tr>
+    <tr><td>UPDATE, DELETE, MERGE</td><td><code>true</code></td><td>Rows really changed</td></tr>
+    <tr><td>INSERT OVERWRITE / mode("overwrite")</td><td><code>true</code></td><td>All old files removed, new ones added</td></tr>
+    <tr><td>OPTIMIZE, auto compaction</td><td><code>false</code></td><td>Same rows, new file layout</td></tr>
+    <tr><td>RESTORE</td><td><code>true</code></td><td>Current files out, old version's files back in</td></tr>
+  </table></div>
+  <p class="note">A removed file is gone from the table but not from storage. That single fact is why time travel works, and why storage grows until you run <code>VACUUM</code>.</p>
+</section>
+
+<!-- 05 -->
+<section id="optimize">
+  <div class="sec-num">05</div>
+  <h2>OPTIMIZE: many small files into a few big ones</h2>
+  <p>Streaming jobs and small inserts leave thousands of tiny files. Each file must be opened and its footer read, and Spark schedules roughly one task per file, so reads slow down. <code>OPTIMIZE</code> fixes this by <b>bin-packing</b>: it groups small files into bins near a target size, rewrites each bin as one file, and commits all the removes and adds in one go.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="opWrite">Stream writes 4 small files</button>
+      <button id="opRun" class="primary">Run OPTIMIZE</button>
+      <button id="opVac">8 days later: VACUUM</button>
+      <button id="opReset">Reset</button>
+    </div>
+    <div class="grid2">
+      <div class="pane"><h4>Live files (in the log)</h4><div class="files" id="opLive"></div></div>
+      <div class="pane"><h4>On disk, removed (time travel only)</h4><div class="files" id="opDead"></div></div>
+    </div>
+    <div class="kv"><b>downstream stream</b><span id="opDown"></span></div>
+    <div class="log" id="opLog" aria-live="polite"><span class="skip">Six small files from earlier micro-batches are live.</span></div>
+  </div>
+<pre><code><span class="c-k">OPTIMIZE</span> rewards.bronze.transactions;                          <span class="c-c">-- bin-packing only</span>
+<span class="c-k">OPTIMIZE</span> rewards.bronze.transactions <span class="c-k">WHERE</span> txn_date >= <span class="c-s">'2026-11-01'</span>;  <span class="c-c">-- partition filter only</span>
+<span class="c-k">OPTIMIZE</span> rewards.silver.customers <span class="c-k">ZORDER BY</span> (city);           <span class="c-c">-- older multi-column layout</span>
+
+<span class="c-c">-- Newer tables: liquid clustering. OPTIMIZE then clusters incrementally</span>
+<span class="c-k">CREATE TABLE</span> rewards.silver.customers_lc (...) <span class="c-k">CLUSTER BY</span> (city);
+<span class="c-k">OPTIMIZE</span> rewards.silver.customers_lc;</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Run OPTIMIZE twice</td><td>Second run does nothing: it is idempotent</td></tr>
+    <tr><td>Add <code>ZORDER BY (city)</code></td><td>Also sorts rows so each file has a narrow city range; better data skipping, rewrites more data each time</td></tr>
+    <tr><td><code>CLUSTER BY</code> on the table instead</td><td>Liquid clustering: incremental, keys can change later with <code>ALTER TABLE … CLUSTER BY</code></td></tr>
+    <tr><td><code>delta.autoOptimize.optimizeWrite = true</code></td><td>Optimized writes: shuffle before writing, so fewer, larger files from the start</td></tr>
+    <tr><td><code>delta.autoOptimize.autoCompact = true</code></td><td>Small compaction runs right after a write</td></tr>
+    <tr><td>Predictive optimization on (Unity Catalog)</td><td>Databricks decides when to run OPTIMIZE and VACUUM for managed tables</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What happens</th><th>Fix</th></tr>
+    <tr><td>OPTIMIZE and an UPDATE touch the same files at once</td><td>One of them fails with a concurrent modification error</td><td>Rerun, or schedule OPTIMIZE away from heavy update windows</td></tr>
+    <tr><td>OPTIMIZE while appends stream in</td><td>Both succeed: appends never conflict with compaction</td><td>Nothing to do</td></tr>
+    <tr><td>A stream reads from the table being optimized</td><td>Commit has <code>dataChange: false</code>, so the stream skips it</td><td>No duplicates. Nothing to do</td></tr>
+    <tr><td>Storage keeps growing after OPTIMIZE</td><td>Old small files are still on disk</td><td><code>VACUUM</code> after the retention period</td></tr>
+  </table></div>
+  <p class="note">Layout in depth (ZORDER vs liquid clustering, Hilbert curves, CLUSTER BY AUTO) is on the <a href="../liquid-clustering/">Liquid Clustering and Data Layout</a> page.</p>
+</section>
+
+<!-- 06 -->
+<section id="txn">
+  <div class="sec-num">06</div>
+  <h2>Set Transaction: making retries safe</h2>
+  <p>A <code>txn</code> action says: "application <b>X</b> has committed its batch <b>N</b>." Before writing, a job can ask the log for the last version recorded for its app id. If its batch number is not higher, the data is already there, and the write is skipped. That turns "at least once" retries into "exactly once" results.</p>
+<pre><code>{<span class="c-s">"txn"</span>: {"appId":"rewards-stream", "version":7, "lastUpdated":1761483600000}}
+{<span class="c-s">"add"</span>: {"path":"part-003.parquet", "dataChange":true, ...}}
+{<span class="c-s">"commitInfo"</span>: {"operation":"STREAMING UPDATE", ...}}</code></pre>
+  <p>A Delta streaming sink writes <code>txn</code> for you. Inside <code>foreachBatch</code> you must add it yourself with two write options:</p>
+<pre><code><span class="c-k">def</span> upsert_customers(batch_df, batch_id):
+    (batch_df.write.format(<span class="c-s">"delta"</span>)
+        .option(<span class="c-s">"txnAppId"</span>, <span class="c-s">"customers_upsert"</span>)   <span class="c-c"># stable id for this job</span>
+        .option(<span class="c-s">"txnVersion"</span>, batch_id)          <span class="c-c"># must only go up</span>
+        .mode(<span class="c-s">"append"</span>)
+        .saveAsTable(<span class="c-s">"rewards.silver.customer_events"</span>))
+
+(spark.readStream.table(<span class="c-s">"rewards.bronze.customer_feed"</span>)
+   .writeStream
+   .foreachBatch(upsert_customers)
+   .option(<span class="c-s">"checkpointLocation"</span>, <span class="c-s">"/Volumes/rewards/silver/_chk/customers_upsert"</span>)
+   .start())</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Leave out <code>txnAppId</code> / <code>txnVersion</code></td><td>A batch retried after a crash writes its rows again: duplicates</td></tr>
+    <tr><td>Use a random <code>txnAppId</code> per run</td><td>Every restart looks like a new app, so nothing is deduplicated</td></tr>
+    <tr><td>Write to two tables in one <code>foreachBatch</code></td><td>Each write needs the options; each table keeps its own <code>txn</code></td></tr>
+    <tr><td>Use MERGE instead of append</td><td>MERGE is already safe to repeat if the logic is an upsert; <code>txn</code> options still help on newer runtimes (verify in docs)</td></tr>
+  </table></div>
+  <p class="note trap"><code>txn</code> is not a database transaction. Every commit is a transaction. <code>txn</code> is just an idempotency marker per app id.</p>
+</section>
+
+<!-- 07 -->
+<section id="streaming">
+  <div class="sec-num">07</div>
+  <h2>Structured Streaming: how a stream writes to Delta</h2>
+  <p>Structured Streaming treats a stream as a <b>table that keeps growing</b>. You write a normal DataFrame query. Spark runs it again and again, each time on only the new rows. Each run is a <b>micro-batch</b>. The streaming checkpoint folder records progress so a restart picks up where it stopped.</p>
+  <div class="stage">
+    <svg viewBox="0 0 760 170" role="img" aria-label="Files land, Auto Loader reads them, micro-batches write to the bronze Delta table, checkpoint tracks offsets and commits">
+      <defs><path id="sp1" d="M150 60 L 300 60"/><path id="sp2" d="M450 60 L 600 60"/><path id="sp3" d="M375 85 L 375 125"/></defs>
+      <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--ink)">
+        <g fill="none" stroke="var(--line)" stroke-width="2"><use href="#sp1"/><use href="#sp2"/><use href="#sp3"/></g>
+        <rect x="10" y="35" width="140" height="50" rx="8" fill="var(--code-bg)" stroke="var(--line)"/><text x="80" y="57" text-anchor="middle">Landing files</text><text x="80" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">/Volumes/rewards/bronze/landing</text>
+        <rect x="300" y="35" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/><text x="375" y="57" text-anchor="middle" font-weight="700">Your query</text><text x="375" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">micro-batch every 1 min</text>
+        <rect x="600" y="35" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--bronze)" stroke-width="2"/><text x="675" y="57" text-anchor="middle" font-weight="700" fill="var(--bronze)">bronze.transactions</text><text x="675" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">Delta sink · txn</text>
+        <rect x="290" y="125" width="170" height="38" rx="8" fill="var(--code-bg)" stroke="var(--gold)"/><text x="375" y="149" text-anchor="middle" font-size="12">checkpoint: offsets · commits</text>
+      </g>
+      <g font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">
+        <g><rect x="-14" y="-9" width="28" height="18" rx="4" fill="var(--accent)"/><text text-anchor="middle" y="4" fill="var(--surface)">B7</text><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#sp1"/></animateMotion></g>
+        <g><rect x="-14" y="-9" width="28" height="18" rx="4" fill="var(--bronze)"/><text text-anchor="middle" y="4" fill="var(--surface)">B6</text><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite"><mpath href="#sp2"/></animateMotion></g>
+        <circle r="5" fill="var(--gold)"><animateMotion dur="1.5s" repeatCount="indefinite"><mpath href="#sp3"/></animateMotion></circle>
+      </g>
+    </svg>
+  </div>
+<pre><code>(spark.readStream
+    .format(<span class="c-s">"cloudFiles"</span>)                                 <span class="c-c"># Auto Loader</span>
+    .option(<span class="c-s">"cloudFiles.format"</span>, <span class="c-s">"json"</span>)
+    .schema(<span class="c-s">"txn_id BIGINT, customer_id INT, points INT, event_time TIMESTAMP"</span>)
+    .load(<span class="c-s">"/Volumes/rewards/bronze/landing/card_txn/"</span>)
+ .writeStream
+    .format(<span class="c-s">"delta"</span>)
+    .option(<span class="c-s">"checkpointLocation"</span>, <span class="c-s">"/Volumes/rewards/bronze/_chk/transactions"</span>)
+    .trigger(processingTime=<span class="c-s">"1 minute"</span>)
+    .toTable(<span class="c-s">"rewards.bronze.transactions"</span>))</code></pre>
+
+  <h3>One micro-batch, five steps</h3>
+  <div class="dag">
+    <div class="task">1 · Plan: what is new?</div><span class="to">→</span>
+    <div class="task">2 · Write offsets/N</div><span class="to">→</span>
+    <div class="task">3 · Process + Delta commit (txn N)</div><span class="to">→</span>
+    <div class="task">4 · Write commits/N</div>
+  </div>
+  <p class="cap">The plan is saved before any work starts, so after a crash Spark knows exactly which files batch N covered.</p>
+
+  <h3>Live demo: crash it and see exactly-once</h3>
+  <div class="stage">
+    <div class="ctrls">
+      <button id="stArrive">3 files arrive</button>
+      <button id="stRun" class="primary">Run micro-batch</button>
+      <button id="stCrashA">Crash after Delta commit</button>
+      <button id="stCrashB">Crash before Delta commit</button>
+      <button id="stRestart">Restart stream</button>
+      <button id="stDel">Delete checkpoint</button>
+    </div>
+    <div class="grid3">
+      <div class="pane"><h4>Landing (unread / total)</h4><div class="big" id="stLand"></div><div class="cap" id="stState"></div></div>
+      <div class="pane"><h4>Checkpoint</h4><div class="kv"><b>offsets/</b><span id="stOff"></span><b>commits/</b><span id="stCom"></span></div></div>
+      <div class="pane"><h4>bronze.transactions</h4><div class="kv"><b>rows</b><span class="big" id="stRows">0</span><b>txn</b><span id="stTxn"></span></div></div>
+    </div>
+    <div class="log" id="stLog" aria-live="polite"><span class="skip">Click "3 files arrive", then run a batch. Then try both crash buttons and restart.</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>After restart Spark sees</th><th>What it does</th></tr>
+    <tr><td><code>offsets/7</code> but no <code>commits/7</code></td><td>Batch 7 may be half done, so it re-runs batch 7 with the same files</td></tr>
+    <tr><td>Delta log already has <code>txn version 7</code> for this query</td><td>Skips the Delta write, then writes <code>commits/7</code></td></tr>
+    <tr><td>Both <code>offsets/7</code> and <code>commits/7</code></td><td>Moves on to batch 8</td></tr>
+  </table></div>
+  <p class="note trap">The checkpoint location <b>is</b> the identity of the stream. Delete it and the stream starts from scratch with a new query id, so the Delta sink cannot recognise old batches: you get duplicates. Never share one checkpoint between two streams.</p>
+
+  <h3>Triggers: how often it runs</h3>
+  <div class="stage lanes">
+    <div class="lane str"><b>Default</b><div class="track"><span class="blk" style="--i:0"></span><span class="blk" style="--i:1"></span><span class="blk" style="--i:2"></span><span class="blk" style="--i:3"></span><span class="blk" style="--i:4"></span><span class="blk" style="--i:5"></span></div></div>
+    <div class="lane gap"><b>processingTime</b><div class="track"><span class="blk"></span><span class="blk"></span><span class="blk"></span></div></div>
+    <div class="lane once"><b>availableNow</b><div class="track"><span class="blk"></span></div></div>
+    <p class="cap">Default starts the next batch as soon as one ends. processingTime waits for a fixed interval. availableNow drains the backlog in batches, then stops.</p>
+  </div>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>No <code>.trigger()</code></td><td>Next batch starts as soon as the last ends. Lowest latency, cluster always busy</td></tr>
+    <tr><td><code>trigger(processingTime="1 minute")</code></td><td>One batch a minute, stays running</td></tr>
+    <tr><td><code>trigger(availableNow=True)</code></td><td>Processes everything pending, in several batches, then stops. Schedule it from a job, like an IWA batch window</td></tr>
+    <tr><td><code>trigger(once=True)</code></td><td>Old. One single batch, ignores batch-size limits. Use availableNow</td></tr>
+    <tr><td>New <code>checkpointLocation</code></td><td>Stream starts over from the beginning of the source</td></tr>
+    <tr><td><code>maxFilesPerTrigger = 200</code></td><td>Smaller batches (Delta and Auto Loader sources default to 1,000 files)</td></tr>
+  </table></div>
+
+  <h3>Output modes: what gets written each batch</h3>
+  <p>Example: a running total of reward points per customer. Batch 1 had C1 = 100 and C2 = 50. Batch 2 brings C1 +20 and a new C3 = 70.</p>
+  <div class="stage">
+    <div class="ctrls"><label for="omSel" class="cap">outputMode</label>
+      <select id="omSel"><option value="complete">complete</option><option value="update">update</option><option value="append">append (no watermark)</option><option value="appendw">append + watermark</option></select></div>
+    <div class="tbl"><table class="mini" id="omTable"></table></div>
+    <div class="note" id="omMsg"></div>
+  </div>
+<pre><code>(spark.readStream.table(<span class="c-s">"rewards.bronze.transactions"</span>)
+   .withWatermark(<span class="c-s">"event_time"</span>, <span class="c-s">"10 minutes"</span>)            <span class="c-c"># accept 10 min late, then drop state</span>
+   .groupBy(F.window(<span class="c-s">"event_time"</span>, <span class="c-s">"5 minutes"</span>), <span class="c-s">"customer_id"</span>)
+   .agg(F.sum(<span class="c-s">"points"</span>).alias(<span class="c-s">"points"</span>))
+   .writeStream.outputMode(<span class="c-s">"append"</span>)
+   .option(<span class="c-s">"checkpointLocation"</span>, <span class="c-s">"/Volumes/rewards/silver/_chk/points_5min"</span>)
+   .toTable(<span class="c-s">"rewards.silver.points_5min"</span>))</code></pre>
+  <p class="note">The aggregation state lives in the checkpoint's <code>state/</code> folder. Without a watermark it grows forever. A Delta sink accepts <b>append</b> and <b>complete</b>; for update-style results, use <code>foreachBatch</code> with MERGE.</p>
+
+  <h3>When the source is a Delta table</h3>
+  <p>A stream reading <code>rewards.bronze.transactions</code> reads that table's log. It takes <code>add</code> actions with <code>dataChange: true</code> as new data and skips commits with <code>dataChange: false</code>.</p>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What happens</th><th>Fix</th></tr>
+    <tr><td>Source table is OPTIMIZEd</td><td>Commit skipped, no duplicates</td><td>Nothing to do</td></tr>
+    <tr><td>Source has an UPDATE or DELETE</td><td>Stream fails: an append stream cannot handle <code>remove</code></td><td><code>skipChangeCommits = true</code> to ignore them, or read the Change Data Feed</td></tr>
+    <tr><td>Need inserts, updates and deletes downstream</td><td>Plain stream only sees appends</td><td><code>readChangeFeed = true</code> (CDF enabled on the source), then MERGE</td></tr>
+    <tr><td>Huge backlog on first start</td><td>Batches could be too big</td><td><code>maxFilesPerTrigger</code> or <code>maxBytesPerTrigger</code></td></tr>
+    <tr><td>Source VACUUMed past the stream's position</td><td>Stream fails with missing files</td><td>Keep streams running more often than the retention period</td></tr>
+  </table></div>
+  <p class="note trap"><code>ignoreDeletes</code> and <code>ignoreChanges</code> are the older options. <code>skipChangeCommits</code> is the current one. Check which name the exam uses (verify in docs).</p>
+</section>
+
+<!-- 08 -->
+<section id="atomic">
+  <div class="sec-num">08</div>
+  <h2>Atomicity: all or nothing, with one file</h2>
+  <p>The only thing that makes data visible is the next commit file. Parquet files in the folder that no commit lists are invisible. And creating a single file is atomic: <code>00002.json</code> either exists in full or does not exist. So a write with fifty steps becomes visible in one instant.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <label for="atCrash" class="cap">UPDATE … SET city='Austin' WHERE id=2 · crash at</label>
+      <select id="atCrash"><option value="none">No crash</option><option value="mid">While writing part-002</option><option value="before">After part-002, before commit</option><option value="after">Right after 00002.json</option></select>
+      <button id="atRun" class="primary">Run</button>
+      <button id="atRead">Reader: SELECT city WHERE id=2</button>
+      <button id="atVac">VACUUM later</button>
+    </div>
+    <div class="grid2">
+      <div class="pane"><h4>Parquet in the folder</h4><div class="files" id="atFiles"></div></div>
+      <div class="pane"><h4>_delta_log</h4><div class="files" id="atLogFiles"></div></div>
+    </div>
+    <div class="log" id="atLog" aria-live="polite"><span class="skip">Table is at version 1. Pick a crash point and run.</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Crash point</th><th>On disk</th><th>Reader sees</th><th>Result</th></tr>
+    <tr><td>While writing part-002</td><td>Half a Parquet file</td><td>Version 1</td><td>No change. Garbage file</td></tr>
+    <tr><td>After part-002, before commit</td><td>Complete part-002, no 00002.json</td><td>Version 1</td><td>No change. <b>Orphan file</b></td></tr>
+    <tr><td>After 00002.json</td><td>Everything</td><td>Version 2</td><td>Update fully applied</td></tr>
+  </table></div>
+  <p class="note">There is no rollback step, because nothing visible changed. VACUUM later deletes orphan files once they are older than the retention period.</p>
+</section>
+
+<!-- 09 -->
+<section id="concurrency">
+  <div class="sec-num">09</div>
+  <h2>Two writers at once: optimistic concurrency</h2>
+  <p>Two jobs start from version 1 and both try to create <code>00002.json</code>. Storage lets only one create succeed. The loser does not give up straight away. It reads what the winner did and checks for a conflict. If its own work does not overlap, it retries as <code>00003.json</code>, reusing the Parquet files it already wrote. If it does overlap, it fails.</p>
+  <div class="stage">
+    <div class="ctrls">
+      <span class="cap">Job A: UPDATE id=2 (rewrites part-000). Job B:</span>
+      <select id="ccB">
+        <option value="ins">INSERT a new customer</option>
+        <option value="upd3">UPDATE id=3 (in part-001)</option>
+        <option value="del2">DELETE WHERE id=2 (in part-000)</option>
+        <option value="opt">OPTIMIZE (compacts part-000 + part-001)</option>
+        <option value="schema">ALTER TABLE ADD COLUMN (commits first)</option>
+      </select>
+      <button id="ccRun" class="primary">Race</button>
+    </div>
+    <div class="log" id="ccLog" aria-live="polite"><span class="skip">Pick Job B and race.</span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Job A</th><th>Job B</th><th>Outcome</th></tr>
+    <tr><td>INSERT</td><td>INSERT</td><td>Both succeed. Blind appends never conflict</td></tr>
+    <tr><td>UPDATE part-000</td><td>INSERT</td><td>Both succeed after B retries</td></tr>
+    <tr><td>UPDATE part-000</td><td>DELETE reading part-000</td><td>B fails: <code>ConcurrentDeleteReadException</code></td></tr>
+    <tr><td>UPDATE part-000</td><td>OPTIMIZE part-000</td><td>B fails: <code>ConcurrentDeleteDeleteException</code></td></tr>
+    <tr><td>Any write</td><td>Schema or property change</td><td>Loser fails: <code>MetadataChangedException</code></td></tr>
+    <tr><td>Two writers, same <code>txnAppId</code></td><td>-</td><td><code>ConcurrentTransactionException</code></td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Isolation level</th><th>WriteSerializable (default)</th><th>Serializable</th></tr>
+    <tr><td>Blind INSERT vs UPDATE</td><td>Allowed</td><td>Can conflict</td></tr>
+    <tr><td>Strength</td><td>Writes are serializable; reads may see an order that never existed</td><td>Reads and writes fully serializable</td></tr>
+    <tr><td>Set with</td><td colspan="2"><code>ALTER TABLE t SET TBLPROPERTIES ('delta.isolationLevel' = 'Serializable')</code></td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Scenario</th><th>What happens</th><th>Fix</th></tr>
+    <tr><td>Nightly MERGE and hourly OPTIMIZE collide</td><td>One fails each night</td><td>Separate the schedules, or use liquid clustering + deletion vectors (row-level concurrency, verify in docs)</td></tr>
+    <tr><td>Two MERGEs on different regions conflict</td><td>Both read the whole table</td><td>Put the partition or cluster column in the <code>ON</code> clause so each reads only its files</td></tr>
+    <tr><td>Job fails with a concurrent exception</td><td>Nothing was committed</td><td>Retry the job. Lakeflow Jobs retries can do it</td></tr>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section id="storage">
+  <div class="sec-num">10</div>
+  <h2>Who guarantees "only one writer wins"?</h2>
+  <p>Optimistic concurrency needs one promise from storage: <b>create this file only if it does not exist yet</b> (put-if-absent). Different clouds give that promise in different ways.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--ok)">ADLS Gen2 · HDFS</span><p class="cap">Write a temp file, then an atomic rename to <code>00002.json</code>. The rename fails if the name is taken.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">Amazon S3</span><p class="cap">For years S3 had no safe put-if-absent. Databricks uses its own commit service. Open-source Delta uses a DynamoDB LogStore, or S3 conditional writes on newer setups.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Google Cloud Storage</span><p class="cap">Supports create-if-not-exists natively (verify in docs).</p></div>
+  </div>
+  <p class="note trap">On S3, do not let open-source Spark and Databricks write to the same Delta table without a shared commit coordinator. Two writers could silently overwrite each other's commit.</p>
+</section>
+
+<!-- 11 -->
+<section id="acid">
+  <div class="sec-num">11</div>
+  <h2>ACID: where each letter comes from</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag" style="color:var(--accent)">A · Atomicity</span><p class="cap">One commit file = one transaction. All there, or not at all.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">C · Consistency</span><p class="cap">Schema enforcement from <code>metaData</code>, CHECK and NOT NULL constraints, conflict checks.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">I · Isolation</span><p class="cap">Readers use a fixed snapshot (one version). Writers use optimistic concurrency.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">D · Durability</span><p class="cap">Data and log live in cloud object storage. Once committed, it stays.</p></div>
+  </div>
+  <p class="note">Isolation in practice: a long report that started at version 41 keeps reading version 41, even if a MERGE commits version 42 halfway through. It never sees half of a write.</p>
+</section>
+
+<!-- 12 -->
+<section id="timetravel">
+  <div class="sec-num">12</div>
+  <h2>Time travel: query the table as it was</h2>
+  <p>Every commit is a version. Removed files stay on disk until VACUUM. So Delta can rebuild any older version by replaying the log only up to that point. No backup is involved.</p>
+  <p>Here is a bad day on <code>rewards.silver.customers</code>: at version 3 someone ran a DELETE with the wrong filter and wiped every customer in Dallas and Austin. Drag the slider, restore, then see what VACUUM does to history.</p>
+  <div class="stage">
+    <div class="ctrls"><label for="ttV" class="cap">VERSION AS OF <b id="ttVv"></b></label><input type="range" id="ttV" min="0" max="3" value="3">
+      <button id="ttRestore" class="primary">RESTORE TO VERSION AS OF 2</button><button id="ttVac">8 days pass + VACUUM</button><button id="ttReset">Reset</button></div>
+    <div class="grid2">
+      <div style="display:grid;gap:8px;align-content:start"><span class="tag" style="color:var(--muted)">DESCRIBE HISTORY</span><div class="tbl"><table class="mini" id="ttHist"></table></div></div>
+      <div style="display:grid;gap:8px;align-content:start"><span class="tag" style="color:var(--muted)">Files for this version</span><div class="files" id="ttFiles"></div><div class="tbl"><table class="mini" id="ttRows"></table></div></div>
+    </div>
+    <div class="log" id="ttLog" aria-live="polite"><span class="skip">Version 3 is the bad DELETE. Slide back to 2 to see the lost rows.</span></div>
+  </div>
+<pre><code><span class="c-c">-- Read the past</span>
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers <span class="c-k">VERSION AS OF</span> 2;
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers <span class="c-k">TIMESTAMP AS OF</span> <span class="c-s">'2026-10-26 11:30:00'</span>;
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers@v2;
+
+<span class="c-c">-- Fix 1: roll the whole table back (adds a NEW version)</span>
+<span class="c-k">RESTORE TABLE</span> rewards.silver.customers <span class="c-k">TO VERSION AS OF</span> 2;
+
+<span class="c-c">-- Fix 2: put back only the lost rows, keep later good changes</span>
+<span class="c-k">INSERT INTO</span> rewards.silver.customers
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers <span class="c-k">VERSION AS OF</span> 2
+<span class="c-k">EXCEPT</span>
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers;
+
+<span class="c-c">-- What did version 3 change?</span>
+<span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers <span class="c-k">VERSION AS OF</span> 2
+<span class="c-k">EXCEPT</span> <span class="c-k">SELECT</span> * <span class="c-k">FROM</span> rewards.silver.customers <span class="c-k">VERSION AS OF</span> 3;</code></pre>
+<pre><code><span class="c-c"># PySpark</span>
+spark.read.option(<span class="c-s">"versionAsOf"</span>, 2).table(<span class="c-s">"rewards.silver.customers"</span>)
+spark.read.option(<span class="c-s">"timestampAsOf"</span>, <span class="c-s">"2026-10-26 11:30:00"</span>).table(<span class="c-s">"rewards.silver.customers"</span>)</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td><code>TIMESTAMP AS OF</code> a time between two commits</td><td>Picks the latest version at or before that time</td></tr>
+    <tr><td>Timestamp before the first commit</td><td>Error: no version that old</td></tr>
+    <tr><td>Version whose files were vacuumed</td><td>Error: data files not found</td></tr>
+    <tr><td><code>RESTORE</code> instead of the INSERT … EXCEPT fix</td><td>Undoes every change after version 2, the good ones too</td></tr>
+    <tr><td>Query an old version after ADD COLUMN</td><td>You get the old schema, without the new column</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="color:var(--warn)">Accidental DELETE or UPDATE</span><p class="cap">RESTORE, or re-insert only the lost rows.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">Bad pipeline run</span><p class="cap">Last night's job loaded duplicates. Restore to the version before it ran.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Debugging</span><p class="cap">"Why did 500 accounts lose reward points?" Diff the two versions.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">Audit</span><p class="cap">Show the FICO band or balance as it was at month-end close.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Reproducible reports and ML</span><p class="cap">Pin a report or training set to one version so reruns match.</p></div>
+    <div class="card"><span class="tag" style="color:var(--silver)">Migration validation</span><p class="cap">Compare counts and totals before and after a MERGE or load.</p></div>
+  </div>
+  <p class="note">First check is often <code>DESCRIBE HISTORY</code>: its <code>operationMetrics</code> column shows <code>numDeletedRows</code>, <code>numUpdatedRows</code> and so on for every commit.</p>
+</section>
+
+<!-- 13 -->
+<section id="retention">
+  <div class="sec-num">13</div>
+  <h2>How far back can you go? Retention and VACUUM</h2>
+  <p>Two settings decide this, and they control different things. In practice the shorter one wins, which is usually the 7-day file retention used by VACUUM.</p>
+  <div class="tbl"><table>
+    <tr><th>Setting</th><th>Default</th><th>Controls</th></tr>
+    <tr><td><code>delta.deletedFileRetentionDuration</code></td><td>7 days</td><td>How long removed data files must be kept before VACUUM may delete them</td></tr>
+    <tr><td><code>delta.logRetentionDuration</code></td><td>30 days</td><td>How long JSON commits are kept in <code>_delta_log</code></td></tr>
+  </table></div>
+<pre><code><span class="c-k">VACUUM</span> rewards.silver.customers;                    <span class="c-c">-- removed files older than 7 days</span>
+<span class="c-k">VACUUM</span> rewards.silver.customers <span class="c-k">RETAIN</span> 168 <span class="c-k">HOURS</span>;   <span class="c-c">-- same, written out</span>
+<span class="c-k">VACUUM</span> rewards.silver.customers <span class="c-k">DRY RUN</span>;           <span class="c-c">-- list what would be deleted</span>
+
+<span class="c-c">-- Keep 30 days of time travel</span>
+<span class="c-k">ALTER TABLE</span> rewards.silver.customers <span class="c-k">SET TBLPROPERTIES</span> (
+  <span class="c-s">'delta.deletedFileRetentionDuration'</span> = <span class="c-s">'interval 30 days'</span>,
+  <span class="c-s">'delta.logRetentionDuration'</span>         = <span class="c-s">'interval 60 days'</span>);
+
+<span class="c-c">-- Long-term copy that survives VACUUM</span>
+<span class="c-k">CREATE TABLE</span> rewards.archive.customers_2026_10 <span class="c-k">DEEP CLONE</span> rewards.silver.customers <span class="c-k">VERSION AS OF</span> 2;</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Never run VACUUM</td><td>Time travel reaches as far as the log does, but storage keeps growing</td></tr>
+    <tr><td><code>RETAIN 24 HOURS</code></td><td>Blocked by default: running queries and streams could lose files they are reading</td></tr>
+    <tr><td><code>spark.databricks.delta.retentionDurationCheck.enabled = false</code></td><td>Lets you go below 7 days. Risky; avoid outside tests</td></tr>
+    <tr><td>Raise only <code>logRetentionDuration</code></td><td>History rows remain, but VACUUM still deletes the files, so old reads fail</td></tr>
+    <tr><td><code>SHALLOW CLONE</code> instead of DEEP</td><td>Copies only the log and points at the source files. VACUUM on the source can break it</td></tr>
+  </table></div>
+  <p class="note trap">Time travel is not a backup. It lives in the same storage as the table. DROP the table or VACUUM the files and that history is gone.</p>
+</section>
+
+<!-- 14 -->
+<section id="merge">
+  <div class="sec-num">14</div>
+  <h2>MERGE: how an upsert changes the log</h2>
+  <p>MERGE joins a source to the target, finds the target files that hold matching rows, rewrites only those files, writes inserted rows to new files, and commits everything as one set of <code>remove</code> and <code>add</code> actions. Files with no match are not touched and do not appear in the commit.</p>
+  <p>Example: the daily vendor feed <code>rewards.bronze.customer_updates</code> says Ravi (id 2) moved to Denver and Kiran (id 5) is a new customer. The target is at version 4.</p>
+  <div class="stage">
+    <div class="ctrls"><label class="tog"><input type="checkbox" id="mgDv"> deletion vectors on</label><button id="mgRun" class="primary">Run MERGE</button><button id="mgReset">Reset to version 4</button></div>
+    <div class="grid2">
+      <div style="display:grid;gap:8px;align-content:start"><span class="tag" style="color:var(--muted)">Target files</span><div class="tbl"><table class="mini" id="mgFiles"></table></div></div>
+      <div style="display:grid;gap:8px;align-content:start"><span class="tag" style="color:var(--muted)">_delta_log/00005.json</span><pre class="jpre"><code id="mgJson">(not written yet)</code></pre></div>
+    </div>
+    <div class="note" id="mgMsg">Run the MERGE with deletion vectors off, then on, and compare what gets rewritten.</div>
+  </div>
+<pre><code><span class="c-k">MERGE INTO</span> rewards.silver.customers t
+<span class="c-k">USING</span> rewards.bronze.customer_updates s
+<span class="c-k">ON</span> t.id = s.id
+<span class="c-k">WHEN MATCHED THEN UPDATE SET</span> *
+<span class="c-k">WHEN NOT MATCHED THEN INSERT</span> *;</code></pre>
+<pre><code><span class="c-c"># Same thing as a streaming upsert, Bronze → Silver</span>
+<span class="c-k">from</span> delta.tables <span class="c-k">import</span> DeltaTable
+
+<span class="c-k">def</span> upsert(batch_df, batch_id):
+    latest = batch_df.dropDuplicates([<span class="c-s">"id"</span>])          <span class="c-c"># one source row per key</span>
+    (DeltaTable.forName(spark, <span class="c-s">"rewards.silver.customers"</span>).alias(<span class="c-s">"t"</span>)
+        .merge(latest.alias(<span class="c-s">"s"</span>), <span class="c-s">"t.id = s.id"</span>)
+        .whenMatchedUpdateAll()
+        .whenNotMatchedInsertAll()
+        .execute())
+
+(spark.readStream.table(<span class="c-s">"rewards.bronze.customer_updates"</span>)
+   .writeStream.foreachBatch(upsert)
+   .option(<span class="c-s">"checkpointLocation"</span>, <span class="c-s">"/Volumes/rewards/silver/_chk/customers_merge"</span>)
+   .trigger(availableNow=<span class="c-k">True</span>).start())</code></pre>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Add <code>WHEN MATCHED AND s.op = 'D' THEN DELETE</code></td><td>Rows dropped while rewriting (or marked in a deletion vector); shows as <code>numTargetRowsDeleted</code></td></tr>
+    <tr><td>Add <code>WHEN NOT MATCHED BY SOURCE THEN DELETE</code></td><td>Target rows missing from the source are deleted, so many more files may be rewritten</td></tr>
+    <tr><td><code>ON t.id = s.id AND t.region = 'US'</code></td><td>File pruning: MERGE reads only files that can match, and conflicts less with other jobs</td></tr>
+    <tr><td><code>MERGE WITH SCHEMA EVOLUTION</code></td><td>New source columns are added; a <code>metaData</code> action joins the same commit</td></tr>
+    <tr><td>Two source rows with the same id</td><td>MERGE fails: multiple source rows matched one target row. Deduplicate first</td></tr>
+    <tr><td>Deletion vectors on</td><td>Matched files are not rewritten; a small bitmap marks old rows deleted</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>commitInfo metric</th><th>Meaning</th></tr>
+    <tr><td><code>numTargetRowsUpdated / Inserted / Deleted</code></td><td>Real row changes</td></tr>
+    <tr><td><code>numTargetRowsCopied</code></td><td>Unchanged rows rewritten only because they shared a file. High = wasted work</td></tr>
+    <tr><td><code>numTargetFilesRemoved / Added</code></td><td>How many files the commit swapped</td></tr>
+  </table></div>
+  <p class="note">MERGE is one commit. Updates, inserts and deletes all appear together, or not at all. Because MERGE <b>reads</b> target files, it can conflict with another job that rewrites them at the same time.</p>
+</section>
+
+<!-- 15 -->
+<section id="dv">
+  <div class="sec-num">15</div>
+  <h2>Deletion vectors: copy-on-write vs merge-on-read</h2>
+  <p>With deletion vectors on, a DELETE, UPDATE or MERGE does not rewrite a file to drop one row. It writes a tiny bitmap that says "row 2 of part-002 is deleted", and re-adds the same file with that bitmap attached. Readers load the file and skip the marked rows.</p>
+<pre><code>{<span class="c-s">"remove"</span>: {"path":"part-002.parquet", "dataChange":true}}
+{<span class="c-s">"add"</span>:    {"path":"part-002.parquet", "dataChange":true,
+            "deletionVector":{"storageType":"u", "pathOrInlineDv":"ab^-aqEH.-t@S}K{vb[*k^",
+                              "offset":1, "sizeInBytes":36, "cardinality":1}}}
+{<span class="c-s">"add"</span>:    {"path":"part-005.parquet", "dataChange":true}}</code></pre>
+  <div class="tbl"><table>
+    <tr><th>Criteria</th><th>Copy-on-write</th><th>Deletion vectors (merge-on-read)</th></tr>
+    <tr><td>Write speed for small changes</td><td>Slow: whole files rewritten</td><td>Fast: small bitmap</td></tr>
+    <tr><td>Read speed</td><td>Fastest</td><td>Slightly slower: bitmaps applied</td></tr>
+    <tr><td>Log pattern</td><td>remove old path, add new path</td><td>remove + add of the <b>same</b> path, with <code>deletionVector</code></td></tr>
+    <tr><td>Protocol needed</td><td>Any</td><td>Reader 3 / writer 7 with the <code>deletionVectors</code> feature</td></tr>
+    <tr><td>Cleanup</td><td>None</td><td><code>OPTIMIZE</code> or <code>REORG TABLE … APPLY (PURGE)</code> rewrites files and drops bitmaps</td></tr>
+  </table></div>
+  <p class="note trap">After a deletion vector, the old row is still physically inside the Parquet file. For compliance deletes (for example a customer's right to be forgotten), run <code>REORG … APPLY (PURGE)</code> and then <code>VACUUM</code>.</p>
+</section>
+
+<!-- 16 -->
+<section id="protocol">
+  <div class="sec-num">16</div>
+  <h2>Change Protocol: keeping old clients out</h2>
+  <p>Some features change how files must be read. Deletion vectors are an example: a client that ignores the bitmaps would return deleted rows. So enabling such a feature writes a <code>protocol</code> action that raises the minimum versions. A client that does not understand them refuses to read or write, instead of returning wrong results.</p>
+<pre><code>{<span class="c-s">"protocol"</span>: {"minReaderVersion":3, "minWriterVersion":7,
+              "readerFeatures":["deletionVectors"],
+              "writerFeatures":["deletionVectors"]}}
+{<span class="c-s">"metaData"</span>: {..., "configuration":{"delta.enableDeletionVectors":"true"}}}
+{<span class="c-s">"commitInfo"</span>: {"operation":"SET TBLPROPERTIES", ...}}</code></pre>
+  <div class="tbl"><table>
+    <tr><th>Version</th><th>What it means</th></tr>
+    <tr><td>Reader 1 / writer 2</td><td>Basic Delta. Common default for simple tables</td></tr>
+    <tr><td>Reader 2 / writer 5</td><td>Column mapping (rename and drop columns)</td></tr>
+    <tr><td>Reader 3 / writer 7</td><td>Table features: each feature listed by name, for example <code>deletionVectors</code>, <code>timestampNtz</code></td></tr>
+  </table></div>
+  <div class="tbl whatif"><table>
+    <tr><th>What if I change this?</th><th>Effect</th></tr>
+    <tr><td>Enable deletion vectors, liquid clustering, row tracking</td><td>Protocol upgraded in the same commit</td></tr>
+    <tr><td>An old Spark job or external engine reads the table</td><td>Fails with an unsupported-feature error</td></tr>
+    <tr><td><code>ALTER TABLE … DROP FEATURE deletionVectors</code></td><td>Some features can be removed to downgrade; it rewrites files and needs history to age out. Verify in docs</td></tr>
+  </table></div>
+  <p class="note trap">Treat protocol upgrades as one-way. Before enabling a feature, check every engine that reads the table, including external tools and Delta Sharing recipients.</p>
+</section>
+
+<!-- 17 -->
+<section id="decide">
+  <div class="sec-num">17</div>
+  <h2>Which tool? Decide in two clicks</h2>
+  <div class="stage dec">
+    <div class="ctrls" id="dq1">
+      <span class="cap">What do you need?</span>
+      <button data-s="undo">Undo a bad change</button><button data-s="stream">Load a stream exactly once</button><button data-s="upsert">Apply updates</button><button data-s="fast">Faster reads</button><button data-s="history">Keep history</button>
+    </div>
+    <div class="ctrls" id="dq2"></div>
+    <div class="answer" id="dAns" hidden><span class="cap">Use</span><strong id="dPick"></strong><span id="dWhy" class="cap"></span></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>Requirement</th><th>Pick</th></tr>
+    <tr><td>Whole table wrong after a bad job</td><td><code>RESTORE TABLE … TO VERSION AS OF</code></td></tr>
+    <tr><td>A few rows lost, later changes are good</td><td>INSERT … SELECT VERSION AS OF … EXCEPT current</td></tr>
+    <tr><td>Stream to Delta with no duplicates on restart</td><td>Delta sink + one dedicated checkpointLocation</td></tr>
+    <tr><td>Idempotent writes from foreachBatch</td><td><code>txnAppId</code> + <code>txnVersion</code></td></tr>
+    <tr><td>Upsert a CDC feed into Silver</td><td>MERGE (in foreachBatch for streams), dedupe source first</td></tr>
+    <tr><td>Many small files, slow reads</td><td>OPTIMIZE, optimized writes, auto compaction</td></tr>
+    <tr><td>Frequent small updates on big files</td><td>Deletion vectors</td></tr>
+    <tr><td>Audit beyond 7 days</td><td>Raise both retention settings, or DEEP CLONE snapshots</td></tr>
+    <tr><td>What changed and who did it</td><td><code>DESCRIBE HISTORY</code> + version diff</td></tr>
+  </table></div>
+</section>
+
+<!-- 18 -->
+<section id="terms">
+  <div class="sec-num">18</div>
+  <h2>Don't confuse these</h2>
+  <div class="terms">
+    <div class="card"><span class="tag" style="color:var(--gold)">Delta log checkpoint</span><p class="cap">Parquet snapshot of table state inside <code>_delta_log</code>, every 10 commits.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">Streaming checkpoint</span><p class="cap">Your <code>checkpointLocation</code> folder: offsets, commits and state for one stream.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">txn action</span><p class="cap">Idempotency marker: app id + batch number. Not "the transaction".</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Commit</span><p class="cap">The transaction itself: one numbered JSON file.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">remove action</span><p class="cap">File leaves the table logically. Still on disk.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">VACUUM</span><p class="cap">Physically deletes removed files past retention. Ends time travel to them.</p></div>
+    <div class="card"><span class="tag" style="color:var(--accent)">OPTIMIZE</span><p class="cap">Rewrites small files into big ones. <code>dataChange: false</code>.</p></div>
+    <div class="card"><span class="tag" style="color:var(--silver)">RESTORE</span><p class="cap">Makes an old version current by adding a new commit.</p></div>
+    <div class="card"><span class="tag" style="color:var(--silver)">VERSION AS OF</span><p class="cap">Just reads an old version. Changes nothing.</p></div>
+    <div class="card"><span class="tag" style="color:var(--gold)">Deletion vector</span><p class="cap">Bitmap of deleted rows in one file. Speeds up writes.</p></div>
+    <div class="card"><span class="tag" style="color:var(--ok)">Change Data Feed</span><p class="cap">Row-level inserts, updates and deletes per version, for downstream consumers.</p></div>
+    <div class="card"><span class="tag" style="color:var(--warn)">Watermark</span><p class="cap">How late events may arrive before streaming state is dropped.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">DEEP CLONE</span><p class="cap">Copies data files too. A real independent copy.</p></div>
+    <div class="card"><span class="tag" style="color:var(--bronze)">SHALLOW CLONE</span><p class="cap">Copies only the log. Points at the source's files.</p></div>
+  </div>
+  <p class="note">Parked for later: nothing was explicitly parked this session. Touched only briefly and worth a session of their own: Change Data Feed in depth (<code>_change_type</code>, <code>table_changes()</code>), stateful streaming (state stores, stream-stream joins), column mapping and DROP FEATURE, row tracking and row-level concurrency, and Delta Sharing / UniForm readers vs protocol versions.</p>
+</section>
+
+<footer>Study notes for Asim's Databricks Data Engineer Professional prep. JSON examples are simplified, and option names, defaults and version details come from study discussion; confirm them against the official Databricks documentation before the exam. Items marked "verify in docs" are ones I am least sure of.</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.querySelectorAll('animateMotion, animate').forEach(function(a){ a.parentNode && a.parentNode.removeChild(a); });
+
+  function $(id){return document.getElementById(id);}
+  function el(t,c,h){var e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;}
+  function log(box,cls,msg){var s=el('span',cls,msg); box.appendChild(s); box.scrollTop=box.scrollHeight;}
+  function bump(n){n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');}
+  function table(t,cols,rows){var h='<tr>'+cols.map(function(c){return '<th>'+c+'</th>'}).join('')+'</tr>'; rows.forEach(function(r){h+='<tr>'+r.map(function(v){return '<td>'+v+'</td>'}).join('')+'</tr>'}); t.innerHTML=h;}
+  function seq(box,lines,done){ /* print lines one by one, or all at once with reduced motion */
+    if(reduce){lines.forEach(function(l){log(box,l[0],l[1])}); if(done) done(); return;}
+    var i=0; (function n(){ if(i<lines.length){log(box,lines[i][0],lines[i][1]); i++; setTimeout(n,380);} else if(done) done(); })();
+  }
+  var NUL='<span class="chip">NULL</span>';
+
+  /* ---------- 02 commit stepper ---------- */
+  var W=[
+    {sql:'CREATE TABLE … ; INSERT (1,Asha,Chicago), (2,Ravi,Pune)', add:['part-000'], rm:[], acts:['protocol','metaData','add','commitInfo'],
+     json:'{"protocol":{"minReaderVersion":1,"minWriterVersion":2}}\n{"metaData":{"id":"a1b2c3","schemaString":"{id INT, name STRING, city STRING}",\n  "partitionColumns":[],"configuration":{}}}\n{"add":{"path":"part-000.parquet","size":1024,"dataChange":true,\n  "stats":"{numRecords:2, minValues:{id:1}, maxValues:{id:2}}"}}\n{"commitInfo":{"operation":"WRITE","operationParameters":{"mode":"Append"},"userName":"asim"}}',
+     cols:['id','name','city'], rows:[[1,'Asha','Chicago'],[2,'Ravi','Pune']],
+     why:'<b>protocol</b> sets who may read/write, <b>metaData</b> records the schema, <b>add</b> makes part-000 live with stats for data skipping, <b>commitInfo</b> is the audit row.'},
+    {sql:"INSERT (3,Meera,Dallas)", add:['part-001'], rm:[], acts:['add','commitInfo'],
+     json:'{"add":{"path":"part-001.parquet","dataChange":true,"stats":"{numRecords:1,...}"}}\n{"commitInfo":{"operation":"WRITE",...}}',
+     cols:['id','name','city'], rows:[[1,'Asha','Chicago'],[2,'Ravi','Pune'],[3,'Meera','Dallas']],
+     why:'A pure append only needs a new <b>add</b>. Nothing else changes.'},
+    {sql:"UPDATE … SET city='Austin' WHERE id=2", add:['part-002'], rm:['part-000'], acts:['remove','add','commitInfo'],
+     json:'{"remove":{"path":"part-000.parquet","deletionTimestamp":1761476400000,"dataChange":true}}\n{"add":{"path":"part-002.parquet","dataChange":true,...}}\n{"commitInfo":{"operation":"UPDATE","operationParameters":{"predicate":"id = 2"}}}',
+     cols:['id','name','city'], rows:[[1,'Asha','Chicago'],[2,'Ravi','<b>Austin</b>'],[3,'Meera','Dallas']],
+     why:'Parquet is immutable, so part-000 is rewritten as part-002. <b>remove</b> hides part-000, but it stays on disk: <code>VERSION AS OF 1</code> still reads it until VACUUM.'},
+    {sql:'ALTER TABLE … ADD COLUMN email STRING', add:[], rm:[], acts:['metaData','commitInfo'],
+     json:'{"metaData":{"id":"a1b2c3","schemaString":"{id, name, city, email}",...}}\n{"commitInfo":{"operation":"ADD COLUMNS",...}}',
+     cols:['id','name','city','email'], rows:[[1,'Asha','Chicago',NUL],[2,'Ravi','Austin',NUL],[3,'Meera','Dallas',NUL]],
+     why:'No data files rewritten. The new <b>metaData</b> fully replaces the old one; existing files simply return NULL for email.'},
+    {sql:'Structured Streaming job rewards-stream writes micro-batch 7', add:['part-003'], rm:[], acts:['txn','add','commitInfo'],
+     json:'{"txn":{"appId":"rewards-stream","version":7,"lastUpdated":1761483600000}}\n{"add":{"path":"part-003.parquet","dataChange":true,...}}\n{"commitInfo":{"operation":"STREAMING UPDATE",...}}',
+     cols:['id','name','city','email'], rows:[[1,'Asha','Chicago',NUL],[2,'Ravi','Austin',NUL],[3,'Meera','Dallas',NUL],[4,'Nisha','Boston','nisha@mail.com']],
+     why:'<b>txn</b> records "rewards-stream has committed batch 7". If the job crashes and retries batch 7, Delta sees it and skips the write: no duplicates.'},
+    {sql:"SET TBLPROPERTIES ('delta.enableDeletionVectors' = true)", add:[], rm:[], acts:['protocol','metaData','commitInfo'],
+     json:'{"protocol":{"minReaderVersion":3,"minWriterVersion":7,\n  "readerFeatures":["deletionVectors"],"writerFeatures":["deletionVectors"]}}\n{"metaData":{...,"configuration":{"delta.enableDeletionVectors":"true"}}}\n{"commitInfo":{"operation":"SET TBLPROPERTIES",...}}',
+     cols:['id','name','city','email'], rows:[[1,'Asha','Chicago',NUL],[2,'Ravi','Austin',NUL],[3,'Meera','Dallas',NUL],[4,'Nisha','Boston','nisha@mail.com']],
+     why:'<b>protocol</b> is raised. An old client that does not know deletion vectors now refuses the table instead of returning wrong rows. Treat it as one-way.'}
+  ];
+  var AC={protocol:'bad',metaData:'acc',add:'ok',remove:'bad',txn:'',commitInfo:''};
+  var steps=$('wkSteps');
+  W.forEach(function(c,i){var b=el('button',null,'v'+i); b.onclick=function(){wk(i)}; steps.appendChild(b);});
+  function wk(v){
+    [].forEach.call(steps.children,function(b,i){b.classList.toggle('on',i===v)});
+    var c=W[v], live={}, gone={};
+    for(var i=0;i<=v;i++){W[i].rm.forEach(function(f){delete live[f]; gone[f]=1}); W[i].add.forEach(function(f){live[f]=1});}
+    $('wkName').textContent='0000'+v+'.json'; $('wkJson').textContent=c.json; $('wkSql').innerHTML='<b>Statement:</b> <code>'+c.sql+'</code>';
+    $('wkActs').innerHTML=c.acts.map(function(a){return '<span class="chip '+AC[a]+'">'+a+'</span>'}).join(' ');
+    var F=$('wkFiles'); F.innerHTML='';
+    Object.keys(live).forEach(function(f){F.appendChild(el('span','pq '+(c.add.indexOf(f)>=0?'new':'live'),f+(c.add.indexOf(f)>=0?' · added':'')))});
+    Object.keys(gone).forEach(function(f){F.appendChild(el('span','pq gone',f))});
+    table($('wkRows'),c.cols,c.rows); $('wkWhy').innerHTML=c.why;
+  }
+  wk(0);
+
+  /* ---------- 03 checkpoint slider ---------- */
+  function cp(){
+    var n=+$('cpN').value, on=$('cpOn').checked, last=n-1, files, txt;
+    $('cpNv').textContent=n+' (latest version '+last+')';
+    if(on && last>=10){var c=Math.floor(last/10)*10; files=1+(last-c); txt='1 checkpoint (v'+c+') + '+(last-c)+' JSON file'+(last-c===1?'':'s')+' = '+files+' reads';}
+    else {files=n; txt=n+' JSON files, replayed one by one';}
+    $('cpTxt').textContent=txt; $('cpMeter').style.width=Math.max(2,files/250*100)+'%';
+  }
+  $('cpN').oninput=cp; $('cpOn').onchange=cp; cp();
+
+  /* ---------- 05 OPTIMIZE ---------- */
+  var op;
+  function opInit(){op={live:[],dead:[],n:7,v:6,down:720}; for(var i=1;i<=6;i++) op.live.push({n:'part-00'+i,small:true,rows:120}); $('opLog').innerHTML='<span class="skip">Six small files from earlier micro-batches are live.</span>'; opDraw();}
+  function opDraw(){
+    var L=$('opLive'),D=$('opDead'); L.innerHTML=''; D.innerHTML='';
+    op.live.forEach(function(f){L.appendChild(el('span','pq '+(f.small?'live':'new'),f.n+(f.small?' · 3 MB':' · '+(f.rows/40|0)+' MB')))});
+    if(!op.dead.length) D.appendChild(el('span','cap','empty'));
+    op.dead.forEach(function(f){D.appendChild(el('span','pq gone',f.n))});
+    $('opDown').innerHTML='<b>'+op.down.toLocaleString()+'</b> rows read so far by a stream reading this table';
+  }
+  $('opWrite').onclick=function(){
+    var add=[]; for(var i=0;i<4;i++){var f={n:'part-'+String(op.n++).padStart(3,'0'),small:true,rows:120}; op.live.push(f); add.push(f.n);}
+    op.v++; op.down+=480; log($('opLog'),'ok','v'+op.v+' STREAMING UPDATE: add '+add.join(', ')+' (dataChange=true). Stream downstream reads +480 rows'); opDraw(); bump($('opDown'));
+  };
+  $('opRun').onclick=function(){
+    var sm=op.live.filter(function(f){return f.small});
+    if(sm.length<2){log($('opLog'),'skip','OPTIMIZE: nothing to compact. Running it again is a no-op'); return;}
+    var big={n:'part-'+String(op.n++).padStart(3,'0'),small:false,rows:sm.reduce(function(a,f){return a+f.rows},0)*40};
+    op.live=op.live.filter(function(f){return !f.small}).concat([big]); op.dead=op.dead.concat(sm); op.v++;
+    log($('opLog'),'ok','v'+op.v+' OPTIMIZE: remove '+sm.length+' files, add '+big.n+'. All with dataChange=false');
+    log($('opLog'),'skip','  downstream stream: commit v'+op.v+' skipped, 0 new rows (no duplicates)'); opDraw();
+  };
+  $('opVac').onclick=function(){
+    if(!op.dead.length){log($('opLog'),'skip','VACUUM: no removed files past retention'); return;}
+    log($('opLog'),'bad','VACUUM: physically deleted '+op.dead.length+' file(s). Versions before the last OPTIMIZE can no longer be time-travelled'); op.dead=[]; opDraw();
+  };
+  $('opReset').onclick=opInit; opInit();
+
+  /* ---------- 07 streaming crash demo ---------- */
+  var st;
+  function stInit(){st={total:0,read:0,off:{},com:{},txn:{},qid:1,rows:0,next:0,down:false,maxLoaded:0};}
+  stInit();
+  function stDraw(){
+    $('stLand').textContent=(st.total-st.read)+' / '+st.total;
+    var ok=Object.keys(st.off), ck=Object.keys(st.com);
+    $('stOff').textContent=ok.length?ok.join(', '):'empty'; $('stCom').textContent=ck.length?ck.join(', '):'empty';
+    $('stRows').textContent=st.rows.toLocaleString();
+    var t=st.txn[st.qid]; $('stTxn').textContent='appId query-'+st.qid+' · version '+(t==null?'none':t);
+    $('stState').innerHTML=st.down?'<span class="err">stream DOWN</span>':'<span class="okc">running</span>';
+  }
+  var SL=$('stLog');
+  function stDelta(b){
+    var r=st.off[b], n=r[1]-r[0];
+    if(st.txn[st.qid]!=null && st.txn[st.qid]>=b){log(SL,'skip','  Delta: txn(query-'+st.qid+', '+b+') already in the log → write skipped, no duplicates'); return;}
+    st.rows+=n*100; st.txn[st.qid]=b;
+    if(r[0]<st.maxLoaded) log(SL,'bad','  Delta commit: +'+(n*100)+' rows, but files '+(r[0]+1)+'–'+Math.min(r[1],st.maxLoaded)+' were loaded before: DUPLICATES');
+    else log(SL,'ok','  Delta commit with txn(query-'+st.qid+', '+b+'): +'+(n*100)+' rows');
+    st.maxLoaded=Math.max(st.maxLoaded,r[1]); bump($('stRows'));
+  }
+  function stRun(mode){
+    if(st.down){log(SL,'bad','Stream is down. Click "Restart stream".'); return;}
+    if(st.read>=st.total){log(SL,'skip','No new files. Nothing to plan.'); return;}
+    var b=st.next; st.off[b]=[st.read,st.total];
+    log(SL,'skip','> batch '+b+': offsets/'+b+' = files '+(st.read+1)+'–'+st.total);
+    if(mode==='B'){st.down=true; log(SL,'bad','  CRASH before the Delta commit. Nothing written to the table'); stDraw(); return;}
+    stDelta(b);
+    if(mode==='A'){st.down=true; log(SL,'bad','  CRASH before commits/'+b+' was written'); stDraw(); return;}
+    st.com[b]=1; st.read=st.off[b][1]; st.next=b+1; log(SL,'ok','  commits/'+b+' written. Batch done'); stDraw();
+  }
+  $('stArrive').onclick=function(){st.total+=3; log(SL,'skip','+ 3 card_txn JSON files landed'); stDraw();};
+  $('stRun').onclick=function(){stRun('ok')}; $('stCrashA').onclick=function(){stRun('A')}; $('stCrashB').onclick=function(){stRun('B')};
+  $('stRestart').onclick=function(){
+    if(!st.down){log(SL,'skip','Stream is already running.'); return;}
+    st.down=false; var b=st.next;
+    log(SL,'skip','> restart: offsets/'+b+' found, commits/'+b+' missing → re-run batch '+b+' with the SAME files');
+    stDelta(b); st.com[b]=1; st.read=st.off[b][1]; st.next=b+1; log(SL,'ok','  commits/'+b+' written. Recovered'); stDraw();
+  };
+  $('stDel').onclick=function(){st.off={};st.com={};st.read=0;st.next=0;st.down=false;st.qid++; log(SL,'bad','! checkpoint deleted: new query id query-'+st.qid+', source restarts from file 1'); stDraw();};
+  stDraw();
+
+  /* output modes */
+  function om(){
+    var m=$('omSel').value, T=$('omTable'), M=$('omMsg'); M.className='note';
+    if(m==='complete'){table(T,['customer','points'],[['C1','120'],['C2','50'],['C3','70']]); M.innerHTML='The <b>whole result</b> is rewritten every batch, including C2 which did not change. Fine for small aggregates.';}
+    else if(m==='update'){table(T,['customer','points'],[['C1','120'],['C3','70']]); M.innerHTML='Only rows that <b>changed</b> this batch. A Delta sink cannot take this directly: use foreachBatch + MERGE.';}
+    else if(m==='append'){table(T,['customer','points'],[]); M.className='note trap'; M.innerHTML='<b>Fails:</b> append is not allowed for a streaming aggregation without a watermark, because no total is ever final.';}
+    else {table(T,['window','customer','points'],[['10:00–10:05','C1','120'],['10:00–10:05','C2','50']]); M.innerHTML='Each window is written <b>once</b>, after the watermark passes its end (here 10:15). C3 is in a later window, written later.';}
+  }
+  $('omSel').onchange=om; om();
+
+  /* ---------- 08 atomicity ---------- */
+  var at;
+  function atInit(){at={files:[['part-000','live'],['part-001','live']],logs:['00000.json','00001.json'],v:1};}
+  function atDraw(){
+    var F=$('atFiles'),G=$('atLogFiles'); F.innerHTML=''; G.innerHTML='';
+    at.files.forEach(function(f){var lab={live:' · live',gone:' · removed',orphan:' · orphan',partial:' · half written'}[f[1]]; F.appendChild(el('span','pq '+({live:'live',gone:'gone',orphan:'dead',partial:'dead'}[f[1]]),f[0]+lab))});
+    at.logs.forEach(function(l,i){G.appendChild(el('span','pq '+(i===at.logs.length-1?'new':''),l))});
+  }
+  var AL=$('atLog');
+  $('atRun').onclick=function(){
+    atInit(); AL.innerHTML=''; var c=$('atCrash').value; var L=[['skip','> UPDATE starts from version 1']];
+    if(c==='mid'){at.files.push(['part-002','partial']); L.push(['bad','  CRASH while writing part-002']); L.push(['skip','  no 00002.json, so readers still see version 1. Nothing to roll back']);}
+    else { at.files.push(['part-002','orphan']); L.push(['ok','  part-002.parquet written (Asha + Ravi Austin). Invisible: no commit lists it']);
+      if(c==='before'){L.push(['bad','  CRASH before the commit']); L.push(['skip','  part-002 is an orphan file. Readers still see version 1']);}
+      else { at.files[0][1]='gone'; at.files[2][1]='live'; at.logs.push('00002.json'); at.v=2; L.push(['ok','  00002.json created: remove part-000 + add part-002. Version 2 is live in one instant']);
+        if(c==='after') L.push(['skip','  CRASH after the commit: harmless, the work is already done']); } }
+    atDraw(); seq(AL,L);
+  };
+  $('atRead').onclick=function(){
+    var live=at.files.filter(function(f){return f[1]==='live'}).map(function(f){return f[0]});
+    log(AL,'ok','reader: version '+at.v+', reads '+live.join(' + ')+' → Ravi lives in '+(at.v===2?'Austin':'Pune'));
+  };
+  $('atVac').onclick=function(){
+    var del=at.files.filter(function(f){return f[1]!=='live'});
+    if(!del.length){log(AL,'skip','VACUUM: nothing to delete'); return;}
+    at.files=at.files.filter(function(f){return f[1]==='live'}); log(AL,'bad','VACUUM (after retention): deleted '+del.map(function(f){return f[0]}).join(', ')); atDraw();
+  };
+  atInit(); atDraw();
+
+  /* ---------- 09 concurrency ---------- */
+  var CC={
+    ins:[['ok','Job A creates 00002.json → SUCCESS (UPDATE: remove part-000, add part-002)'],['bad','Job B creates 00002.json → file exists, FAILED'],['skip','Job B reads 00002.json: A changed part-000 only'],['skip','Job B is a blind append (part-003), read no files → no conflict'],['ok','Job B retries as 00003.json, reusing part-003. Both committed']],
+    upd3:[['ok','Job A creates 00002.json → SUCCESS'],['bad','Job B creates 00002.json → FAILED'],['skip','Job B read part-001; A removed part-000. No overlap'],['ok','Job B retries as 00003.json: remove part-001, add part-004. Both committed']],
+    del2:[['ok','Job A creates 00002.json → SUCCESS'],['bad','Job B creates 00002.json → FAILED'],['skip','Job B read part-000, but A has removed it: B\'s view is stale'],['bad','ConcurrentDeleteReadException. Nothing from B is committed. Rerun the DELETE']],
+    opt:[['ok','Job A creates 00002.json → SUCCESS'],['bad','OPTIMIZE creates 00002.json → FAILED'],['skip','OPTIMIZE wanted to remove part-000, which A already removed'],['bad','ConcurrentDeleteDeleteException. Rerun OPTIMIZE: it will compact part-001 + part-002']],
+    schema:[['ok','ALTER TABLE ADD COLUMN creates 00002.json first → SUCCESS (metaData)'],['bad','Job A (UPDATE) creates 00002.json → FAILED'],['skip','Job A sees the schema changed under it'],['bad','MetadataChangedException. Rerun the UPDATE against the new schema']]
+  };
+  $('ccRun').onclick=function(){$('ccLog').innerHTML=''; seq($('ccLog'),[['skip','> both jobs start from version 1']].concat(CC[$('ccB').value]));};
+
+  /* ---------- 12 time travel ---------- */
+  var TT0=[
+    {op:'WRITE',ts:'09:00',m:'numOutputRows 2',f:['part-000'],r:[[1,'Asha','Chicago'],[2,'Ravi','Pune']]},
+    {op:'WRITE',ts:'10:00',m:'numOutputRows 1',f:['part-000','part-001'],r:[[1,'Asha','Chicago'],[2,'Ravi','Pune'],[3,'Meera','Dallas']]},
+    {op:'UPDATE',ts:'11:00',m:'numUpdatedRows 1',f:['part-001','part-002'],r:[[1,'Asha','Chicago'],[2,'Ravi','Austin'],[3,'Meera','Dallas']]},
+    {op:'DELETE',ts:'12:00',m:'numDeletedRows 2',f:['part-004'],r:[[1,'Asha','Chicago']]}
+  ];
+  var tt,vac;
+  function ttInit(){tt=TT0.slice(); vac={}; $('ttV').max=3; $('ttV').value=3; $('ttLog').innerHTML='<span class="skip">Version 3 is the bad DELETE. Slide back to 2 to see the lost rows.</span>'; ttDraw();}
+  function ttDraw(){
+    var v=+$('ttV').value; $('ttVv').textContent=v;
+    var H=$('ttHist'); table(H,['ver','time','operation','metrics'],tt.map(function(h,i){var b=i===v?['<b>','</b>']:['',''];return [b[0]+i+b[1],h.ts,b[0]+h.op+b[1],h.m]}));
+    var F=$('ttFiles'); F.innerHTML=''; var broken=false;
+    tt[v].f.forEach(function(f){if(vac[f]) broken=true; F.appendChild(el('span','pq '+(vac[f]?'dead':'live'),f+(vac[f]?' · vacuumed':'')))});
+    if(broken){table($('ttRows'),['error'],[['<span class="err">Cannot read version '+v+': data files were deleted by VACUUM</span>']]);}
+    else table($('ttRows'),['id','name','city'],tt[v].r);
+  }
+  $('ttV').oninput=ttDraw;
+  $('ttRestore').onclick=function(){
+    if(tt.length>4){log($('ttLog'),'skip','Already restored. RESTORE again would just add another version.'); return;}
+    tt.push({op:'RESTORE (to v2)',ts:'13:00',m:'numRestoredFiles 2',f:TT0[2].f,r:TT0[2].r});
+    $('ttV').max=4; $('ttV').value=4; log($('ttLog'),'ok','v4 RESTORE: remove part-004, add part-001 + part-002 again. Version 3 is still in history'); ttDraw();
+  };
+  $('ttVac').onclick=function(){
+    var live={}; tt[tt.length-1].f.forEach(function(f){live[f]=1}); var del=[];
+    tt.forEach(function(h){h.f.forEach(function(f){if(!live[f]&&!vac[f]){vac[f]=1; del.push(f);}})});
+    log($('ttLog'),del.length?'bad':'skip',del.length?'VACUUM deleted '+del.join(', ')+'. Slide through the versions: some can no longer be read':'VACUUM: nothing past retention to delete'); ttDraw();
+  };
+  $('ttReset').onclick=ttInit; ttInit();
+
+  /* ---------- 14 MERGE ---------- */
+  function mgBase(){table($('mgFiles'),['file','rows','status'],[['part-001','Meera, Dallas','<span class="chip ok">live</span>'],['part-002','Asha, Chicago · Ravi, Austin','<span class="chip ok">live</span>']]); $('mgJson').textContent='(not written yet)'; $('mgMsg').innerHTML='Run the MERGE with deletion vectors off, then on, and compare what gets rewritten.';}
+  $('mgReset').onclick=mgBase;
+  $('mgRun').onclick=function(){
+    var dv=$('mgDv').checked;
+    if(!dv){
+      table($('mgFiles'),['file','rows','status'],[['part-001','Meera, Dallas','<span class="chip">untouched</span>'],['<s>part-002</s>','Asha, Chicago · Ravi, Austin','<span class="chip bad">removed</span>'],['part-005','Asha, Chicago <i>(copied)</i> · Ravi, <b>Denver</b>','<span class="chip acc">added</span>'],['part-006','Kiran, Seattle <i>(inserted)</i>','<span class="chip acc">added</span>']]);
+      $('mgJson').textContent='{"remove":{"path":"part-002.parquet","dataChange":true}}\n{"add":{"path":"part-005.parquet","dataChange":true,"stats":"{numRecords:2,...}"}}\n{"add":{"path":"part-006.parquet","dataChange":true,"stats":"{numRecords:1,...}"}}\n{"commitInfo":{"operation":"MERGE",\n  "operationMetrics":{"numSourceRows":"2","numTargetRowsUpdated":"1",\n   "numTargetRowsInserted":"1","numTargetRowsDeleted":"0",\n   "numTargetRowsCopied":"1","numTargetFilesRemoved":"1","numTargetFilesAdded":"2"}}}';
+      $('mgMsg').innerHTML='<b>Copy-on-write.</b> part-002 was rewritten because Ravi lives there, so Asha was copied too (<code>numTargetRowsCopied: 1</code>). part-001 had no match and is not in the commit.';
+    } else {
+      table($('mgFiles'),['file','rows','status'],[['part-001','Meera, Dallas','<span class="chip">untouched</span>'],['part-002','Asha, Chicago · <s>Ravi, Austin</s>','<span class="chip" style="color:var(--gold);border-color:var(--gold)">re-added + DV</span>'],['part-005','Ravi, <b>Denver</b> · Kiran, Seattle','<span class="chip acc">added</span>']]);
+      $('mgJson').textContent='{"remove":{"path":"part-002.parquet","dataChange":true}}\n{"add":{"path":"part-002.parquet","dataChange":true,\n  "deletionVector":{"storageType":"u","pathOrInlineDv":"ab^-aqEH.-t@S}K{vb[*k^",\n   "offset":1,"sizeInBytes":36,"cardinality":1}}}\n{"add":{"path":"part-005.parquet","dataChange":true}}\n{"commitInfo":{"operation":"MERGE",\n  "operationMetrics":{"numTargetRowsUpdated":"1","numTargetRowsInserted":"1",\n   "numTargetRowsCopied":"0","numTargetDeletionVectorsAdded":"1"}}}';
+      $('mgMsg').innerHTML='<b>Merge-on-read.</b> part-002 is not rewritten. A bitmap marks Ravi\'s old row as deleted (<code>cardinality: 1</code>) and Asha is not copied. Metric names here are approximate (verify in docs).';
+    }
+  };
+  mgBase();
+
+  /* ---------- 17 decision ---------- */
+  var Q={
+    undo:{q:'How much is wrong?',o:[['The whole table, since one bad job','RESTORE TABLE … TO VERSION AS OF','One new commit puts the old version back. History is kept.'],['A few rows; later changes are good','INSERT … SELECT … VERSION AS OF … EXCEPT current','Puts back only the missing rows.'],['The mistake is older than 7 days','Your DEEP CLONE backup, if you made one','VACUUM has probably deleted the old files.']]},
+    stream:{q:'How do you write?',o:[['Plain append into a Delta table','Delta sink + its own checkpointLocation','The sink writes txn for you, so restarts never duplicate.'],['Custom logic in foreachBatch','txnAppId + txnVersion write options','Inside foreachBatch, idempotency is your job.'],['The source table gets updates or deletes','skipChangeCommits, or readChangeFeed','A plain append stream fails on remove actions.']]},
+    upsert:{q:'Where do the changes come from?',o:[['A daily vendor or Oracle extract file','MERGE INTO … USING','One commit applies updates, inserts and deletes together.'],['A stream of change events','foreachBatch + MERGE, deduplicated','A Delta sink cannot do update mode.'],['Tiny changes to very large files','MERGE with deletion vectors on','Avoids rewriting whole files for one row.']]},
+    fast:{q:'What is slow?',o:[['Thousands of small files','OPTIMIZE (+ optimized writes, auto compaction)','Fewer files to open; dataChange=false keeps streams safe.'],['Filters still scan every file','Liquid clustering (or ZORDER on old tables)','Narrow min/max per file means more data skipping.'],['Opening the table itself','Keep log checkpoints (the default)','Readers start from the latest checkpoint, not v0.']]},
+    history:{q:'How far back?',o:[['Up to 7 days','Defaults + VERSION AS OF','Removed files are kept 7 days before VACUUM can delete them.'],['30 to 90 days','Raise deletedFileRetentionDuration and logRetentionDuration','Both must cover the window. Costs storage.'],['Years, for audit','DEEP CLONE snapshots or archive tables','Time travel is not a backup.']]}
+  };
+  var q2=$('dq2'), ans=$('dAns');
+  document.querySelectorAll('#dq1 button').forEach(function(b){b.onclick=function(){
+    document.querySelectorAll('#dq1 button').forEach(function(x){x.classList.remove('primary')}); b.classList.add('primary');
+    var s=Q[b.dataset.s]; q2.innerHTML='<span class="cap">'+s.q+'</span>'; ans.hidden=true;
+    s.o.forEach(function(o){var bb=el('button',null,o[0]); bb.onclick=function(){q2.querySelectorAll('button').forEach(function(x){x.classList.remove('primary')}); bb.classList.add('primary'); $('dPick').textContent=o[1]; $('dWhy').textContent=o[2]; ans.hidden=false;}; q2.appendChild(bb);});
+  };});
+  document.querySelector('#dq1 button').click();
+  q2.querySelector('button').click();
+
+  /* nav highlight */
+  var links=[].slice.call(document.querySelectorAll('#rail a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){var on=a.getAttribute('href')==='#'+e.target.id; a.classList.toggle('on',on); if(on){var r=$('rail'); r.scrollLeft=a.offsetLeft-r.clientWidth/2;}});}});},{rootMargin:'-40% 0px -55% 0px'});
+    document.querySelectorAll('section[id]').forEach(function(s){io.observe(s)});
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -10,6 +10,7 @@ Interactive, animated study notes for the Databricks Data Engineer Professional 
 |---|---|---|
 | [Data Ingestion and Loading](https://asimmirza12.github.io/Databricks-Data-Engineering-Notes/data-ingestion/) | Section 2 (21%) | Auto Loader, COPY INTO, Lakeflow Connect, Unity Catalog storage, JDBC, REST, semi-structured data |
 | [Liquid Clustering and Data Layout](https://asimmirza12.github.io/Databricks-Data-Engineering-Notes/liquid-clustering/) | Section 5 (15%) | Partitioning, OPTIMIZE, data skipping, ZORDER, Bloom filters, liquid clustering, CLUSTER BY AUTO, VACUUM, combinations and order |
+| [Delta Log, Time Travel and MERGE](https://asimmirza12.github.io/Databricks-Data-Engineering-Notes/delta-lake/) | Delta Lake internals (across sections) | Delta log actions, checkpoints, atomicity, optimistic concurrency, time travel, RESTORE, VACUUM retention, MERGE, deletion vectors, protocol, OPTIMIZE, Structured Streaming exactly-once |
 
 Each topic page has animated diagrams, live demos, "what if I change this" tables and comparison tables. See `CLAUDE.md` for how pages are structured and how to add a new topic.
 

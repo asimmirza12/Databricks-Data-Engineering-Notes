@@ -14,6 +14,7 @@ CLAUDE.md                  this file
 Existing topics:
 - `data-ingestion/` — Exam section 2, Data Ingestion and Loading
 - `liquid-clustering/` — Exam section 5, Cost & Performance Optimization (data layout, liquid clustering, VACUUM)
+- `delta-lake/` — Delta Lake internals: transaction log, ACID, time travel, MERGE, deletion vectors, streaming into Delta
 
 ## Adding a new topic
 
